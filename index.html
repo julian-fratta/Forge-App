@@ -60,7 +60,7 @@ body{font-family:'Barlow',sans-serif;background:#000;display:flex;justify-conten
 .tile{border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;cursor:pointer;border:none;transition:transform .15s,opacity .15s;position:relative;overflow:hidden;width:100%;height:100%}
 .tile:hover{transform:scale(.98)}
 .tile:active{transform:scale(.95)}
-.tile-label{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;letter-spacing:.3px;color:#fff;position:relative;z-index:2;text-align:center}
+.tile-label{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:600;letter-spacing:.5px;color:#fff;position:relative;z-index:2;text-align:center}
 .tile-wide{grid-column:span 2;flex-direction:row;gap:12px;align-items:center;justify-content:center}
 .tile-wide .tile-label{font-size:18px}
 .tile-wide .tile-icon-wrap{margin-bottom:0;margin-right:4px}
@@ -72,8 +72,8 @@ body{font-family:'Barlow',sans-serif;background:#000;display:flex;justify-conten
 .tile{border-radius:22px !important}
 .tile-label{font-size:16px !important;font-weight:600 !important;letter-spacing:.3px !important;opacity:.95}
 .tile-arc{position:absolute;inset:0;overflow:hidden;border-radius:22px;pointer-events:none}
-.tile-icon-wrap{position:relative;z-index:2;margin-bottom:8px;opacity:0.8}
-.tile-icon-wrap svg{width:28px;height:28px}
+.tile-icon-wrap{position:relative;z-index:2;margin-bottom:10px;opacity:0.85}
+.tile-icon-wrap svg{width:36px;height:36px}
 
 /* LIST SCREENS */
 .search-bar{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
@@ -137,6 +137,18 @@ body{font-family:'Barlow',sans-serif;background:#000;display:flex;justify-conten
 .cs-icon{font-size:52px;margin-bottom:16px;opacity:.3}
 .cs-wrap h2{font-family:'Barlow Condensed',sans-serif;font-size:26px;color:var(--text2)}
 .cs-wrap p{font-size:14px;color:var(--text3);margin-top:6px}
+
+/* TRAINING MODULES */
+.level-header{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin:22px 0 10px;padding:0 2px;border-left:3px solid var(--accent);padding-left:10px}
+.level-header:first-child{margin-top:0}
+.video-card{background:var(--bg3);border-radius:12px;padding:14px 15px;margin-bottom:8px;border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:14px;text-decoration:none;transition:border-color .15s}
+.video-card:hover{border-color:var(--accent)}
+.video-thumb{width:52px;height:38px;background:var(--bg4);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--border2)}
+.video-thumb svg{width:18px;height:18px;opacity:0.7}
+.video-info{flex:1;min-width:0}
+.video-title{font-size:14px;font-weight:500;color:var(--text);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.video-level{font-size:11px;color:var(--text3);margin-top:3px}
+.video-arrow{color:var(--text3);font-size:16px;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -263,8 +275,11 @@ body{font-family:'Barlow',sans-serif;background:#000;display:flex;justify-conten
 <circle cx="0" cy="0" r="90" stroke="white" stroke-width="1"/>
 </svg></div>
         <div class="tile-icon-wrap" style="margin-bottom:0;margin-right:10px"><svg viewBox="0 0 32 32" fill="none"><rect x="2" y="6" width="20" height="20" rx="3" stroke="white" stroke-width="2"/><path d="M22 11l8-4v14l-8-4V11z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 11l6 5-6 5V11z" fill="white"/></svg></div>
-        <span class="tile-label">Videos</span>
+        <span class="tile-label">Training Modules</span>
       </button>
+    </div>
+    <div style="padding:14px 4px 4px;text-align:center">
+      <p style="font-family:'Barlow',sans-serif;font-size:13px;color:rgba(255,255,255,0.75);letter-spacing:0.8px;line-height:1.7;font-style:italic">"Excellence is the sum of the millions of small, honest actions"</p>
     </div>
   </div>
 </div>
@@ -317,18 +332,14 @@ body{font-family:'Barlow',sans-serif;background:#000;display:flex;justify-conten
   <div class="list-body" id="l-val"></div>
 </div>
 
-<!-- VIDEOS -->
+<!-- TRAINING MODULES -->
 <div id="videos" class="screen">
   <div class="header">
     <button class="back-btn" onclick="nav('home')">&#8592;</button>
-    <div class="header-title">Videos</div>
+    <div class="header-title">Training Modules</div>
     <div class="hdr-right"></div>
   </div>
-  <div class="cs-wrap">
-    <div class="cs-icon">▶</div>
-    <h2>Coming Soon</h2>
-    <p>Video content will be available here.</p>
-  </div>
+  <div class="list-body" id="training-list" style="padding-top:14px"></div>
 </div>
 
 <!-- PLAYER DETAIL -->
@@ -361,7 +372,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0bYsFFDeT8FCx
 
 let USERS = {};
 
-let DB = {players:[], benchmarks:[], evaluation:[], feedback:[], values:[]};
+let DB = {players:[], benchmarks:[], evaluation:[], feedback:[], values:[], training:[]};
 let currentUser = null;
 let teamFilter = 'All';
 
@@ -417,6 +428,16 @@ function processValues(rows) {
   });
 }
 
+function processTraining(rows) {
+  return rows
+    .filter(r => r['Title'] && r['YouTube Video'])
+    .map(r => ({
+      level: String(r['Level'] || 'Other').trim(),
+      title: String(r['Title']).trim(),
+      url:   String(r['YouTube Video']).trim()
+    }));
+}
+
 // ── Load data from Google Sheets ───────────────────────────────
 async function loadData() {
   show('loading');
@@ -428,6 +449,7 @@ async function loadData() {
     DB.evaluation = processEvaluation(raw['Evaluation (Matrix)'] || []);
     DB.feedback   = processFeedback(raw['Pivotal Feedback'] || []);
     DB.values     = processValues(raw['Values'] || []);
+    DB.training   = processTraining(raw['Training Modules'] || []);
     processUsers(raw['Users'] || []);
     show('login');
   } catch(e) {
@@ -463,6 +485,7 @@ function nav(id) {
   }
   show(id);
   if (sections.includes(id)) { teamFilter = 'All'; renderList(id); }
+  if (id === 'videos') renderTraining();
 }
 
 // ── Auth ───────────────────────────────────────────────────────
@@ -544,11 +567,7 @@ function renderList(section) {
   listEl.innerHTML = `<div class="sec-label">${players.length} player${players.length!==1?'s':''}</div>` +
     players.map(p => {
       let sub = '';
-      if (section==='benchmarks') { const b=byNum(DB.benchmarks,p.num); sub=b['5 m Dribble']?`<span style="color:var(--accent)">${b['5 m Dribble']}s</span>`:'<span style="color:var(--text3)">No data</span>'; }
-      if (section==='evaluation') { const e=byNum(DB.evaluation,p.num); sub=e.Average?`<span style="color:var(--purple)">Avg ${e.Average}</span>`:'<span style="color:var(--text3)">No data</span>'; }
-      if (section==='values')     { const v=byNum(DB.values,p.num);     sub=v.Average?`<span style="color:var(--amber)">Avg ${v.Average.toFixed(2)}</span>`:'<span style="color:var(--text3)">No data</span>'; }
-      if (section==='feedback')   { const f=byNum(DB.feedback,p.num);   sub=f.great?`<span style="color:var(--green)">Has feedback</span>`:'<span style="color:var(--text3)">No feedback</span>'; }
-      return `<div class="player-row" onclick="showDetail(${p.num},'${section}')"><div class="pr-info"><h3>${p.name}</h3><p>${p.team} · ${sub}</p></div><div class="pr-num">#${p.num}</div></div>`;
+      return `<div class="player-row" onclick="showDetail(${p.num},'${section}')"><div class="pr-info"><h3>${p.name}</h3><p>${p.team}</p></div><div class="pr-num">#${p.num}</div></div>`;
     }).join('');
 }
 
@@ -671,6 +690,50 @@ function addPlayer() {
   closeModal();
   renderList('benchmarks');
   alert(`${name} (#${num}) added successfully!`);
+}
+
+// ── Training Modules ──────────────────────────────────────────
+function renderTraining() {
+  const list = document.getElementById('training-list');
+  if (!DB.training.length) {
+    list.innerHTML = '<div class="no-data">No training modules available yet.</div>';
+    return;
+  }
+
+  // Group by level preserving order
+  const levels = [];
+  const groups = {};
+  DB.training.forEach(v => {
+    if (!groups[v.level]) { groups[v.level] = []; levels.push(v.level); }
+    groups[v.level].push(v);
+  });
+
+  list.innerHTML = levels.map(level => {
+    const videos = groups[level];
+    return `<div class="level-header">${level}</div>` +
+      videos.map(v => {
+        const videoId = extractYouTubeId(v.url);
+        const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '';
+        return `<a class="video-card" href="${v.url}" target="_blank" rel="noopener">
+          <div class="video-thumb">
+            ${thumbUrl
+              ? `<img src="${thumbUrl}" style="width:52px;height:38px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+              : ''}
+            <svg viewBox="0 0 24 24" fill="none" ${thumbUrl ? 'style="display:none"' : ''}><circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5"/><path d="M10 8l6 4-6 4V8z" fill="white"/></svg>
+          </div>
+          <div class="video-info">
+            <div class="video-title">${v.title}</div>
+            <div class="video-level">${level}</div>
+          </div>
+          <div class="video-arrow">&#8599;</div>
+        </a>`;
+      }).join('');
+  }).join('');
+}
+
+function extractYouTubeId(url) {
+  const match = url.match(/[?&]v=([^&#]+)/);
+  return match ? match[1] : null;
 }
 
 // ── Boot ───────────────────────────────────────────────────────
