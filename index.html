@@ -163,7 +163,7 @@ body{font-family:'Barlow',sans-serif;background:#0a0c10;display:flex;justify-con
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, fetchSignInMethodsForEmail, sendEmailVerification, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, fetchSignInMethodsForEmail, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBI3EE638KidKbw4iTk8DOJMCYBSJQoJIE",
@@ -177,7 +177,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 window._firebaseAuth = auth;
-window._firebaseFns = { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, fetchSignInMethodsForEmail, sendEmailVerification, signOut };
+window._firebaseFns = { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, fetchSignInMethodsForEmail, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut };
 
 onAuthStateChanged(auth, user => {
   if (user) window._firebaseUser = user;
@@ -520,6 +520,13 @@ async function loadData() {
     DB.training   = processTraining(raw['Training Modules'] || []);
     processUsers(raw['Users'] || []);
     show('login');
+    // Check if user arrived via magic link
+    await checkForEmailLink();
+    // Handle pending magic link login after data loaded
+    if (window._pendingMagicEmail) {
+      const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === window._pendingMagicEmail);
+      if (userEntry) { loginSuccess(userEntry[0]); window._pendingMagicEmail = null; }
+    }
   } catch(e) {
     console.error(e);
     document.getElementById('load-err').style.display = 'block';
@@ -1153,7 +1160,12 @@ async function resendSetupLink() {
   try {
     const auth = window._firebaseAuth;
     const fns = window._firebaseFns;
-    await fns.sendPasswordResetEmail(auth, window._verifyEmail);
+    const actionCodeSettings = {
+      url: 'https://julian-fratta.github.io/Forge-App/',
+      handleCodeInApp: true
+    };
+    await fns.sendSignInLinkToEmail(auth, window._verifyEmail, actionCodeSettings);
+    window.localStorage.setItem('forgeSignInEmail', window._verifyEmail);
     msg.textContent = 'Email resent!';
     msg.style.color = 'var(--green)';
   } catch(e) {
