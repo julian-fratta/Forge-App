@@ -1144,6 +1144,36 @@ function extractYouTubeId(url) {
   return match ? match[1] : null;
 }
 
+// ── Send setup link to new user ───────────────────────────────
+async function sendSetupLink() {
+  const email = window._pendingEmail;
+  const err = document.getElementById('login-err3');
+  err.textContent = 'Sending link...';
+  err.style.color = 'var(--text2)';
+  try {
+    const auth = window._firebaseAuth;
+    const fns = window._firebaseFns;
+    // Create account with random temp password
+    const tempPass = 'Forge!' + Math.random().toString(36).substring(2,10) + 'A1';
+    try {
+      await fns.createUserWithEmailAndPassword(auth, email, tempPass);
+      await fns.signOut(auth);
+    } catch(createErr) {
+      if (createErr.code !== 'auth/email-already-in-use') throw createErr;
+    }
+    // Wait then send password reset email
+    await new Promise(r => setTimeout(r, 1500));
+    await fns.sendPasswordResetEmail(auth, email);
+    fetch(APPS_SCRIPT_URL + '?action=setHasAccount&email=' + encodeURIComponent(email)).catch(()=>{});
+    err.textContent = '';
+    showSetupLinkSent(email);
+  } catch(e) {
+    console.error('sendSetupLink error:', e.code, e.message);
+    err.textContent = 'Error: ' + (e.message || e.code);
+    err.style.color = 'var(--red)';
+  }
+}
+
 // ── Email sent screens ────────────────────────────────────────
 function showSetupLinkSent(email) {
   window._verifyEmail = email;
