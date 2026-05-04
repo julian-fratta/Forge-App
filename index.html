@@ -1121,7 +1121,7 @@ function extractYouTubeId(url) {
   return match ? match[1] : null;
 }
 
-// ── Send setup link to new user via EmailJS ───────────────────
+// ── Send setup link to new user ───────────────────────────────
 async function sendSetupLink() {
   const email = window._pendingEmail;
   const err = document.getElementById('login-err3');
@@ -1131,7 +1131,7 @@ async function sendSetupLink() {
     const auth = window._firebaseAuth;
     const fns = window._firebaseFns;
 
-    // Create Firebase account with temp password
+    // Step 1: Create Firebase account with temp password
     const tempPass = 'Forge!' + Math.random().toString(36).substring(2,10) + 'A1';
     try {
       await fns.createUserWithEmailAndPassword(auth, email, tempPass);
@@ -1140,7 +1140,20 @@ async function sendSetupLink() {
       if (createErr.code !== 'auth/email-already-in-use') throw createErr;
     }
 
-    // Send welcome email via EmailJS with app link
+    // Step 2: Trigger Firebase password reset (generates real password page link)
+    await new Promise(r => setTimeout(r, 1000));
+    const resetResp = await fetch(
+      'https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyBI3EE638KidKbw4iTk8DOJMCYBSJQoJIE',
+      {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({requestType: 'PASSWORD_RESET', email: email})
+      }
+    );
+    const resetData = await resetResp.json();
+    console.log('Reset response:', resetData);
+
+    // Step 3: Send welcome email via EmailJS with instructions
     const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email.toLowerCase());
     const userName = userEntry ? (userEntry[1].name || email.split('@')[0]) : email.split('@')[0];
 
@@ -1148,8 +1161,8 @@ async function sendSetupLink() {
       to_email: email,
       to_name: userName,
       from_name: 'Forge Performance',
-      reset_link: 'https://julian-fratta.github.io/Forge-App/',
-      message: 'Welcome to Forge Performance! Your account has been created. Visit the app and tap "Forgot Password" to set your own password and gain access to your stats.',
+      reset_link: 'https://forge-performance-13603.firebaseapp.com/__/auth/action?mode=resetPassword',
+      message: 'Welcome to Forge Performance! Check your inbox for a separate email from Firebase with subject "Reset your password for Forge Performance" — click that link to set your password. Then return to the app and sign in with your email and new password.',
       reply_to: 'noreply@forgeperformance.com'
     });
 
@@ -1170,7 +1183,7 @@ function showSetupLinkSent(email) {
   document.getElementById('verify-email-display').textContent = email;
   document.getElementById('verify-title').textContent = 'Check your email';
   document.getElementById('verify-subtitle').textContent = 'We sent a password setup link to';
-  document.getElementById('verify-body').textContent = 'Click the link in the email to set your password. Once done, come back here and sign in with your email and new password.';
+  document.getElementById('verify-body').textContent = 'Check your inbox for two emails — one from us with instructions, and one from Firebase with the actual password setup link. Click the Firebase link to create your password, then come back and sign in.';
   document.getElementById('resend-msg').textContent = '';
   show('verify-screen');
 }
