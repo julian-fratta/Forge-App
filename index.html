@@ -161,6 +161,8 @@ body{font-family:'Barlow',sans-serif;background:#0a0c10;display:flex;justify-con
 .video-arrow{color:var(--text3);font-size:16px;flex-shrink:0}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>emailjs.init("8Ul0RVc6STSvL4wja");</script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script>
@@ -1144,7 +1146,7 @@ function extractYouTubeId(url) {
   return match ? match[1] : null;
 }
 
-// ── Send setup link to new user ───────────────────────────────
+// ── Send setup link to new user via EmailJS ───────────────────
 async function sendSetupLink() {
   const email = window._pendingEmail;
   const err = document.getElementById('login-err3');
@@ -1153,7 +1155,8 @@ async function sendSetupLink() {
   try {
     const auth = window._firebaseAuth;
     const fns = window._firebaseFns;
-    // Create account with random temp password
+
+    // Create Firebase account with temp password
     const tempPass = 'Forge!' + Math.random().toString(36).substring(2,10) + 'A1';
     try {
       await fns.createUserWithEmailAndPassword(auth, email, tempPass);
@@ -1161,18 +1164,30 @@ async function sendSetupLink() {
     } catch(createErr) {
       if (createErr.code !== 'auth/email-already-in-use') throw createErr;
     }
-    // Wait then send password reset email
-    await new Promise(r => setTimeout(r, 1500));
-    await fns.sendPasswordResetEmail(auth, email);
+
+    // Send welcome email via EmailJS with app link
+    const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email.toLowerCase());
+    const userName = userEntry ? (userEntry[1].name || email.split('@')[0]) : email.split('@')[0];
+
+    await emailjs.send('service_swiiwil', 'template_quyik0o', {
+      to_email: email,
+      to_name: userName,
+      from_name: 'Forge Performance',
+      reset_link: 'https://julian-fratta.github.io/Forge-App/',
+      message: 'Welcome to Forge Performance! Your account has been created. Visit the app and tap "Forgot Password" to set your own password and gain access to your stats.',
+      reply_to: 'noreply@forgeperformance.com'
+    });
+
     fetch(APPS_SCRIPT_URL + '?action=setHasAccount&email=' + encodeURIComponent(email)).catch(()=>{});
     err.textContent = '';
     showSetupLinkSent(email);
   } catch(e) {
-    console.error('sendSetupLink error:', e.code, e.message);
-    err.textContent = 'Error: ' + (e.message || e.code);
+    console.error('sendSetupLink error:', e);
+    err.textContent = 'Error: ' + (e.text || e.message || JSON.stringify(e));
     err.style.color = 'var(--red)';
   }
 }
+
 
 // ── Email sent screens ────────────────────────────────────────
 function showSetupLinkSent(email) {
@@ -1209,22 +1224,23 @@ async function resendSetupLink() {
   btn.disabled = true;
   btn.style.opacity = '0.5';
   try {
-    const auth = window._firebaseAuth;
-    const fns = window._firebaseFns;
-    const actionCodeSettings = {
-      url: 'https://julian-fratta.github.io/Forge-App/',
-      handleCodeInApp: true
-    };
-    await fns.sendSignInLinkToEmail(auth, window._verifyEmail, actionCodeSettings);
-    window.localStorage.setItem('forgeSignInEmail', window._verifyEmail);
+    await emailjs.send('service_swiiwil', 'template_quyik0o', {
+      to_email: window._verifyEmail,
+      to_name: window._verifyEmail.split('@')[0],
+      from_name: 'Forge Performance',
+      reset_link: 'https://julian-fratta.github.io/Forge-App/',
+      message: 'Welcome to Forge Performance! Visit the app and tap "Forgot Password" to set your password.',
+      reply_to: 'noreply@forgeperformance.com'
+    });
     msg.textContent = 'Email resent!';
     msg.style.color = 'var(--green)';
   } catch(e) {
-    msg.textContent = 'Could not resend. Please try again.';
+    msg.textContent = 'Could not resend: ' + (e.text || e.message);
     msg.style.color = 'var(--red)';
   }
   setTimeout(() => { btn.disabled = false; btn.style.opacity = '1'; }, 30000);
 }
+
 
 // ── Boot ───────────────────────────────────────────────────────
 document.getElementById('email-in').addEventListener('keydown', e => { if(e.key==='Enter') checkEmail(); });
