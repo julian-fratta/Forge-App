@@ -605,8 +605,11 @@ function checkEmail() {
   window._pendingUserKey = userEntry[0];
   document.getElementById('email-display').value = email;
 
-  const hasAccount = userEntry[1].hasAccount;
+  // Same flow for ALL roles - check hasAccount from sheet
+  const hasAccount = userEntry[1].hasAccount === true;
   document.getElementById('step-email').style.display = 'none';
+  document.getElementById('step-password').style.display = 'none';
+  document.getElementById('step-setpassword').style.display = 'none';
   if (hasAccount) {
     document.getElementById('step-password').style.display = 'block';
   } else {
