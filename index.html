@@ -225,9 +225,9 @@ firebase.auth().onAuthStateChanged(user => {
 
     <!-- REGISTER: Enter email to get setup link -->
     <div id="step-register" style="display:none">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-        <button onclick="showSignIn()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;padding:0">← Back to Sign In</button>
-      </div>
+      <button onclick="showSignIn()" style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text2);cursor:pointer;font-size:13px;padding:8px 12px;margin-bottom:20px;font-family:'Barlow',sans-serif">
+        ← Back to Sign In
+      </button>
       <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:18px;border:1px solid var(--border)">
         <p style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">Create your account</p>
         <p style="font-size:13px;color:var(--text2);line-height:1.6">Enter your email below. If it's registered, we'll send you a link to set up your password.</p>
@@ -656,11 +656,27 @@ async function doLogin() {
 async function sendPasswordReset() {
   const email = document.getElementById('email-in').value.trim().toLowerCase();
   const err = document.getElementById('login-err');
-  if (!email) { err.style.color = 'var(--red)'; err.textContent = 'Please enter your email first.'; return; }
+  err.style.color = 'var(--red)';
+  if (!email) { err.textContent = 'Please enter your email first.'; return; }
+  const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
+  if (!userEntry) { err.textContent = 'Email not found. Please contact your coach.'; return; }
+  err.style.color = 'var(--text2)';
+  err.textContent = 'Sending reset link...';
   try {
+    // Generate Firebase reset link
     await window._firebaseFns.sendPasswordResetEmail(window._firebaseAuth, email);
+    // Also send via EmailJS with branded template
+    const userName = userEntry[1].name || email.split('@')[0];
+    await emailjs.send('service_swiiwil', 'template_3muhq1s', {
+      to_email: email,
+      to_name: userName,
+      from_name: 'Forge Performance',
+      reset_link: 'https://julian-fratta.github.io/Forge-App/',
+      message: 'You requested a password reset for your Forge Performance account. Check your inbox for a separate email from Firebase with the reset link, or tap "Forgot Password" again in the app.',
+      reply_to: 'noreply@forgeperformance.com'
+    });
     err.style.color = 'var(--green)';
-    err.textContent = '✓ Reset link sent to ' + email;
+    err.textContent = '✓ Password reset email sent to ' + email;
   } catch(e) {
     err.style.color = 'var(--red)';
     err.textContent = 'Could not send reset email. Please try again.';
