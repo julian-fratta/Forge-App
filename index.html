@@ -652,22 +652,60 @@ async function createAccount() {
   const pass = document.getElementById('new-pass-in').value;
   const confirm = document.getElementById('confirm-pass-in').value;
   const err = document.getElementById('login-err4');
-  if (!email) { err.textContent = 'Session expired. Please go back and try again.'; return; }
+  
+  // Show all errors visibly
+  err.style.color = 'var(--red)';
+  err.style.display = 'block';
+  
+  if (!email) { err.textContent = 'Session expired — please request a new setup link.'; return; }
   if (pass.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return; }
   if (pass !== confirm) { err.textContent = 'Passwords do not match.'; return; }
+  
+  err.style.color = 'var(--text2)';
   err.textContent = 'Creating your account...';
+  
   try {
     const auth = window._firebaseAuth;
     const fns = window._firebaseFns;
+    
+    if (!auth || !fns) {
+      err.style.color = 'var(--red)';
+      err.textContent = 'Firebase not loaded. Please refresh and try again.';
+      return;
+    }
+    
     await fns.createUserWithEmailAndPassword(auth, email, pass);
+    
+    // Update sheet
     fetch(APPS_SCRIPT_URL + '?action=setHasAccount&email=' + encodeURIComponent(email)).catch(()=>{});
-    err.textContent = '';
-    loginSuccess(window._pendingUserKey || email);
+    
+    // Show success message
+    err.style.color = 'var(--green)';
+    err.textContent = '✓ Account created successfully! Signing you in...';
+    
+    // Short delay then login
+    await new Promise(r => setTimeout(r, 1500));
+    
+    // Find user entry
+    const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email.toLowerCase());
+    const userKey = userEntry ? userEntry[0] : email;
+    loginSuccess(userKey);
+    
   } catch(e) {
     console.error('createAccount error:', e.code, e.message);
-    err.textContent = e.code === 'auth/email-already-in-use'
-      ? 'Account already exists — please sign in instead.'
-      : 'Error: ' + (e.message || e.code);
+    err.style.color = 'var(--red)';
+    if (e.code === 'auth/email-already-in-use') {
+      err.textContent = 'Account already exists. Redirecting to sign in...';
+      setTimeout(() => {
+        ['step-createpassword'].forEach(id => document.getElementById(id).style.display = 'none');
+        document.getElementById('step-email').style.display = 'block';
+        window._pendingEmail = email;
+        document.getElementById('email-in').value = email;
+        checkEmail();
+      }, 1500);
+    } else {
+      err.textContent = 'Error ' + e.code + ': ' + e.message;
+    }
   }
 }
 
