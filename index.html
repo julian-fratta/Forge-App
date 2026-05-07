@@ -211,44 +211,48 @@ firebase.auth().onAuthStateChanged(user => {
     <p>Performance Analytics</p>
   </div>
   <div style="width:100%" id="login-form">
-    <!-- Step 1: Email -->
-    <div id="step-email">
-      <div class="field"><label>Email Address</label><input type="email" id="email-in" placeholder="Enter your email" autocomplete="email"/></div>
-      <button class="btn-primary" onclick="checkEmail()">Continue</button>
-      <div class="login-error" id="login-err"></div>
-    </div>
-    <!-- Step 2: Password (existing user) -->
-    <div id="step-password" style="display:none">
-      <div class="field" style="margin-bottom:6px"><label>Email</label><input type="email" id="email-display" disabled style="opacity:0.5"/></div>
-      <button style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;margin-bottom:14px;padding:0" onclick="backToEmail()">← Change email</button>
+
+    <!-- MAIN LOGIN: Email + Password -->
+    <div id="step-signin" style="display:block">
+      <div class="field"><label>Email</label><input type="email" id="email-in" placeholder="Enter your email" autocomplete="email"/></div>
       <div class="field"><label>Password</label><input type="password" id="p-in" placeholder="Enter your password" autocomplete="current-password"/></div>
       <button class="btn-primary" onclick="doLogin()">Sign In</button>
-      <button style="width:100%;background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;margin-top:12px;padding:8px" onclick="sendPasswordReset()">Forgot password?</button>
-      <div class="login-error" id="login-err2"></div>
-    </div>
-    <!-- Step 3: New user - send setup email -->
-    <div id="step-setpassword" style="display:none">
-      <div style="background:rgba(26,110,245,0.1);border:1px solid rgba(26,110,245,0.3);border-radius:10px;padding:16px;margin-bottom:20px">
-        <p style="font-size:14px;color:var(--text);font-weight:600;margin-bottom:6px">Welcome to Forge!</p>
-        <p style="font-size:13px;color:var(--text2);line-height:1.6">We'll send a setup link to your email. Click it to create your password, then come back and sign in.</p>
-      </div>
-      <button class="btn-primary" onclick="sendSetupLink()">Send Setup Link</button>
-      <button style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;margin-top:10px;width:100%;padding:8px" onclick="backToEmail()">← Use a different email</button>
-      <div class="login-error" id="login-err3"></div>
+      <button style="width:100%;background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;margin-top:10px;padding:8px" onclick="sendPasswordReset()">Forgot password?</button>
+      <div class="login-error" id="login-err" style="min-height:20px"></div>
+      <div style="height:1px;background:var(--border);margin:16px 0"></div>
+      <button style="width:100%;background:none;border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;padding:13px;font-family:'Barlow',sans-serif" onclick="showRegister()">Register Account</button>
     </div>
 
-    <!-- Step 4: Set password (arrived via setup link) -->
+    <!-- REGISTER: Enter email to get setup link -->
+    <div id="step-register" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <button onclick="showSignIn()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;padding:0">← Back to Sign In</button>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:18px;border:1px solid var(--border)">
+        <p style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">Create your account</p>
+        <p style="font-size:13px;color:var(--text2);line-height:1.6">Enter your email below. If it's registered, we'll send you a link to set up your password.</p>
+      </div>
+      <div class="field"><label>Email Address</label><input type="email" id="reg-email-in" placeholder="Enter your email"/></div>
+      <button class="btn-primary" onclick="sendSetupLink()">Send Setup Link</button>
+      <div class="login-error" id="login-err3" style="min-height:20px;margin-top:10px"></div>
+    </div>
+
+    <!-- CREATE PASSWORD: After clicking email link -->
     <div id="step-createpassword" style="display:none">
-      <div style="background:rgba(29,185,84,0.1);border:1px solid rgba(29,185,84,0.3);border-radius:10px;padding:16px;margin-bottom:20px">
-        <p style="font-size:14px;color:var(--text);font-weight:600;margin-bottom:6px">✓ Email confirmed!</p>
-        <p style="font-size:13px;color:var(--text2);line-height:1.6">Now create a password to complete your account setup.</p>
+      <div style="background:rgba(29,185,84,0.1);border:1px solid rgba(29,185,84,0.3);border-radius:10px;padding:14px;margin-bottom:18px">
+        <p style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">✓ Email confirmed!</p>
+        <p style="font-size:13px;color:var(--text2);line-height:1.6">Create a password to complete your account setup.</p>
       </div>
       <div class="field"><label>Create Password</label><input type="password" id="new-pass-in" placeholder="Min. 6 characters"/></div>
       <div class="field"><label>Confirm Password</label><input type="password" id="confirm-pass-in" placeholder="Repeat password"/></div>
       <button class="btn-primary" onclick="createAccount()">Complete Setup</button>
-      <div class="login-error" id="login-err4" style="min-height:20px"></div>
+      <div class="login-error" id="login-err4" style="min-height:20px;margin-top:10px"></div>
     </div>
+
   </div>
+</div>
+
+<!-- HOME --></div>
 </div>
 
 <!-- HOME -->
@@ -599,144 +603,88 @@ function nav(id) {
 
 // ── Auth ───────────────────────────────────────────────────────
 // ── Email step ─────────────────────────────────────────────────
-function checkEmail() {
-  const email = document.getElementById('email-in').value.trim().toLowerCase();
-  const err = document.getElementById('login-err');
-  if (!email || !email.includes('@')) { err.textContent = 'Please enter a valid email.'; return; }
-
-  const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
-  if (!userEntry) { err.textContent = 'Email not found. Please contact your coach.'; return; }
-
-  err.textContent = '';
-  window._pendingEmail = email;
-  window._pendingUserKey = userEntry[0];
-  document.getElementById('email-display').value = email;
-
-  // Same flow for ALL roles - check hasAccount from sheet
-  const hasAccount = userEntry[1].hasAccount === true;
-  document.getElementById('step-email').style.display = 'none';
-  document.getElementById('step-password').style.display = 'none';
-  document.getElementById('step-setpassword').style.display = 'none';
-  if (hasAccount) {
-    document.getElementById('step-password').style.display = 'block';
-  } else {
-    document.getElementById('step-setpassword').style.display = 'block';
-  }
+// ── Show/hide screens ─────────────────────────────────────────
+function showSignIn() {
+  document.getElementById('step-signin').style.display = 'block';
+  document.getElementById('step-register').style.display = 'none';
+  document.getElementById('step-createpassword').style.display = 'none';
+  document.getElementById('login-err').textContent = '';
 }
 
+function showRegister() {
+  document.getElementById('step-signin').style.display = 'none';
+  document.getElementById('step-register').style.display = 'block';
+  document.getElementById('step-createpassword').style.display = 'none';
+  document.getElementById('login-err3').textContent = '';
+  document.getElementById('reg-email-in').value = '';
+}
 
-// ── Sign in existing user ──────────────────────────────────────
+// ── Sign In ────────────────────────────────────────────────────
 async function doLogin() {
-  const email = window._pendingEmail;
+  const email = document.getElementById('email-in').value.trim().toLowerCase();
   const password = document.getElementById('p-in').value;
-  const err = document.getElementById('login-err2');
+  const err = document.getElementById('login-err');
+  err.style.color = 'var(--red)';
+  if (!email) { err.textContent = 'Please enter your email.'; return; }
   if (!password) { err.textContent = 'Please enter your password.'; return; }
+  err.style.color = 'var(--text2)';
   err.textContent = 'Signing in...';
   try {
     const auth = window._firebaseAuth;
     const fns = window._firebaseFns;
-    const userCredential = await fns.signInWithEmailAndPassword(auth, email, password);
-    // Email verified - proceed to login
+    await fns.signInWithEmailAndPassword(auth, email, password);
     err.textContent = '';
-    loginSuccess(window._pendingUserKey);
-  } catch(e) {
-    err.textContent = e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
-      ? 'Incorrect password. Try again.'
-      : 'Sign in failed. Please try again.';
-  }
-}
-
-// ── Create new account ─────────────────────────────────────────
-async function createAccount() {
-  const email = window._pendingEmail;
-  const pass = document.getElementById('new-pass-in').value;
-  const confirm = document.getElementById('confirm-pass-in').value;
-  const err = document.getElementById('login-err4');
-  
-  // Show all errors visibly
-  err.style.color = 'var(--red)';
-  err.style.display = 'block';
-  
-  if (!email) { err.textContent = 'Session expired — please request a new setup link.'; return; }
-  if (pass.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return; }
-  if (pass !== confirm) { err.textContent = 'Passwords do not match.'; return; }
-  
-  err.style.color = 'var(--text2)';
-  err.textContent = 'Creating your account...';
-  
-  try {
-    const auth = window._firebaseAuth;
-    const fns = window._firebaseFns;
-    
-    if (!auth || !fns) {
-      err.style.color = 'var(--red)';
-      err.textContent = 'Firebase not loaded. Please refresh and try again.';
-      return;
-    }
-    
-    await fns.createUserWithEmailAndPassword(auth, email, pass);
-    
-    // Update sheet
-    fetch(APPS_SCRIPT_URL + '?action=setHasAccount&email=' + encodeURIComponent(email)).catch(()=>{});
-    
-    // Show success and redirect to login
-    err.style.color = 'var(--green)';
-    err.textContent = '✓ Password created! Please sign in with your email and new password.';
-    await new Promise(r => setTimeout(r, 2000));
-    // Go back to login screen
-    show('login');
-    document.getElementById('step-email').style.display = 'block';
-    document.getElementById('step-password').style.display = 'none';
-    document.getElementById('step-setpassword').style.display = 'none';
-    document.getElementById('step-createpassword').style.display = 'none';
-    document.getElementById('email-in').value = email;
-    
-  } catch(e) {
-    console.error('createAccount error:', e.code, e.message);
-    err.style.color = 'var(--red)';
-    if (e.code === 'auth/email-already-in-use') {
-      err.textContent = 'Account already exists. Redirecting to sign in...';
-      setTimeout(() => {
-        ['step-createpassword'].forEach(id => document.getElementById(id).style.display = 'none');
-        document.getElementById('step-email').style.display = 'block';
-        window._pendingEmail = email;
-        document.getElementById('email-in').value = email;
-        checkEmail();
-      }, 1500);
+    // Find user in sheet
+    const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
+    if (userEntry) {
+      loginSuccess(userEntry[0]);
     } else {
-      err.textContent = 'Error ' + e.code + ': ' + e.message;
+      err.style.color = 'var(--red)';
+      err.textContent = 'Account not found in system. Please contact your coach.';
     }
+  } catch(e) {
+    err.style.color = 'var(--red)';
+    err.textContent = e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
+      ? 'Incorrect password. Try again or use Forgot Password.'
+      : e.code === 'auth/user-not-found'
+      ? 'No account found. Please Register Account first.'
+      : 'Sign in failed: ' + e.message;
   }
 }
 
-
-// ── Check for setup link on load ──────────────────────────────
-function checkSetupLink() {
-  const email = window._setupEmail;
-  if (!email) return;
-  window._setupEmail = null;
-  window._pendingEmail = email;
-  const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
-  if (userEntry) window._pendingUserKey = userEntry[0];
-  ['step-email','step-password','step-setpassword'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
-  });
-  document.getElementById('step-createpassword').style.display = 'block';
-  console.log('Showing create password for:', email);
+// ── Forgot Password ────────────────────────────────────────────
+async function sendPasswordReset() {
+  const email = document.getElementById('email-in').value.trim().toLowerCase();
+  const err = document.getElementById('login-err');
+  if (!email) { err.style.color = 'var(--red)'; err.textContent = 'Please enter your email first.'; return; }
+  try {
+    await window._firebaseFns.sendPasswordResetEmail(window._firebaseAuth, email);
+    err.style.color = 'var(--green)';
+    err.textContent = '✓ Reset link sent to ' + email;
+  } catch(e) {
+    err.style.color = 'var(--red)';
+    err.textContent = 'Could not send reset email. Please try again.';
+  }
 }
 
-// ── Send setup link via EmailJS ───────────────────────────────
+// ── Register: Send Setup Link ──────────────────────────────────
 async function sendSetupLink() {
-  const email = window._pendingEmail;
+  const email = document.getElementById('reg-email-in').value.trim().toLowerCase();
   const err = document.getElementById('login-err3');
-  if (!email) { err.textContent = 'No email found. Please go back.'; return; }
+  err.style.color = 'var(--red)';
+  if (!email || !email.includes('@')) { err.textContent = 'Please enter a valid email.'; return; }
+  // Check email exists in Users sheet
+  const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
+  if (!userEntry) {
+    err.textContent = 'Email not found. Please contact your coach.';
+    return;
+  }
   err.style.color = 'var(--text2)';
   err.textContent = 'Sending link...';
   try {
     const token = btoa(email + ':' + Date.now());
     const setupLink = 'https://julian-fratta.github.io/Forge-App/?setup=' + encodeURIComponent(token);
-    const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email.toLowerCase());
-    const userName = userEntry ? (userEntry[1].name || email.split('@')[0]) : email.split('@')[0];
+    const userName = userEntry[1].name || email.split('@')[0];
     await emailjs.send('service_swiiwil', 'template_quyik0o', {
       to_email: email,
       to_name: userName,
@@ -745,72 +693,111 @@ async function sendSetupLink() {
       message: 'Welcome to Forge Performance! Click the link below to set up your password and access your performance data.',
       reply_to: 'noreply@forgeperformance.com'
     });
-    err.textContent = '';
-    showSetupLinkSent(email);
+    err.style.color = 'var(--green)';
+    err.textContent = '✓ Setup link sent to ' + email + '. Check your inbox!';
   } catch(e) {
-    console.error('sendSetupLink error:', e);
     err.style.color = 'var(--red)';
-    err.textContent = 'Error: ' + (e.text || e.message || JSON.stringify(e));
+    err.textContent = 'Error sending email: ' + (e.text || e.message);
   }
 }
 
-function showSetupLinkSent(email) {
-  window._verifyEmail = email;
-  document.getElementById('verify-email-display').textContent = email;
-  document.getElementById('verify-title').textContent = 'Check your email';
-  document.getElementById('verify-subtitle').textContent = 'We sent a password setup link to';
-  document.getElementById('verify-body').textContent = 'Click the link in the email to set your password directly in the app. Once done you will be signed in automatically.';
-  document.getElementById('resend-msg').textContent = '';
-  show('verify-screen');
-}
-
-function showVerificationPending(email) {
-  window._verifyEmail = email;
-  document.getElementById('verify-email-display').textContent = email;
-  document.getElementById('verify-title').textContent = 'Verify your email';
-  document.getElementById('verify-subtitle').textContent = 'Please verify your email before signing in.';
-  document.getElementById('verify-body').textContent = 'Check your inbox and click the verification link, then come back and sign in.';
-  document.getElementById('resend-msg').textContent = '';
-  show('verify-screen');
-}
-
-function backToLoginFromVerify() {
-  show('login');
-  document.getElementById('step-email').style.display = 'block';
-  document.getElementById('step-password').style.display = 'none';
-  document.getElementById('step-setpassword').style.display = 'none';
-  document.getElementById('step-createpassword').style.display = 'none';
-  document.getElementById('login-err').textContent = '';
-}
-
-async function resendSetupLink() {
-  const btn = document.getElementById('resend-btn');
-  const msg = document.getElementById('resend-msg');
-  btn.disabled = true;
-  btn.style.opacity = '0.5';
+// ── Create Account (after clicking setup link) ─────────────────
+async function createAccount() {
+  const email = window._pendingEmail;
+  const pass = document.getElementById('new-pass-in').value;
+  const confirm = document.getElementById('confirm-pass-in').value;
+  const err = document.getElementById('login-err4');
+  err.style.color = 'var(--red)';
+  if (!email) { err.textContent = 'Session expired. Please request a new setup link.'; return; }
+  if (pass.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return; }
+  if (pass !== confirm) { err.textContent = 'Passwords do not match.'; return; }
+  err.style.color = 'var(--text2)';
+  err.textContent = 'Creating your account...';
   try {
-    const email = window._verifyEmail;
-    const token = btoa(email + ':' + Date.now());
-    const setupLink = 'https://julian-fratta.github.io/Forge-App/?setup=' + encodeURIComponent(token);
-    await emailjs.send('service_swiiwil', 'template_quyik0o', {
-      to_email: email,
-      to_name: email.split('@')[0],
-      from_name: 'Forge Performance',
-      reset_link: setupLink,
-      message: 'Here is your new setup link for Forge Performance.',
-      reply_to: 'noreply@forgeperformance.com'
-    });
-    msg.textContent = 'Email resent!';
-    msg.style.color = 'var(--green)';
+    const auth = window._firebaseAuth;
+    const fns = window._firebaseFns;
+    await fns.createUserWithEmailAndPassword(auth, email, pass);
+    // Update Has Account in sheet
+    fetch(APPS_SCRIPT_URL + '?action=setHasAccount&email=' + encodeURIComponent(email)).catch(()=>{});
+    // Sign out so user logs in fresh
+    await fns.signOut(auth);
+    err.style.color = 'var(--green)';
+    err.textContent = '✓ Account created! Please sign in with your email and new password.';
+    await new Promise(r => setTimeout(r, 2000));
+    // Go to sign in screen with email pre-filled
+    showSignIn();
+    document.getElementById('email-in').value = email;
+    document.getElementById('p-in').value = '';
+    document.getElementById('p-in').focus();
   } catch(e) {
-    msg.textContent = 'Could not resend.';
-    msg.style.color = 'var(--red)';
+    err.style.color = 'var(--red)';
+    err.textContent = e.code === 'auth/email-already-in-use'
+      ? 'Account already exists. Please sign in.'
+      : 'Error: ' + (e.message || e.code);
+    if (e.code === 'auth/email-already-in-use') {
+      setTimeout(() => { showSignIn(); document.getElementById('email-in').value = email; }, 2000);
+    }
   }
-  setTimeout(() => { btn.disabled = false; btn.style.opacity = '1'; }, 30000);
+}
+
+// ── Check for setup link in URL ────────────────────────────────
+function checkSetupLink() {
+  const email = window._setupEmail;
+  if (!email) return;
+  window._setupEmail = null;
+  window._pendingEmail = email;
+  document.getElementById('step-signin').style.display = 'none';
+  document.getElementById('step-register').style.display = 'none';
+  document.getElementById('step-createpassword').style.display = 'block';
+}
+
+// ── Logout ─────────────────────────────────────────────────────
+function doLogout() {
+  currentUser = null;
+  if (window._firebaseAuth && window._firebaseFns) {
+    window._firebaseFns.signOut(window._firebaseAuth).catch(()=>{});
+  }
+  show('login');
+  showSignIn();
+  document.getElementById('email-in').value = '';
+  document.getElementById('p-in').value = '';
+}
+
+// ── Login success ──────────────────────────────────────────────
+function formatWelcomeName(fullName) {
+  if (!fullName) return '';
+  const parts = fullName.trim().split(' ');
+  if (parts.length === 1) return parts[0];
+  return parts[0] + ' ' + parts[parts.length-1][0].toUpperCase() + '.';
+}
+
+function loginSuccess(userKey) {
+  const user = USERS[userKey];
+  if (!user) return;
+  currentUser = {...user, username: userKey};
+  if (currentUser.role === 'player') {
+    const pl = DB.players.find(p => p.num === currentUser.number);
+    const fullName = user.name || (pl ? pl.name : '');
+    currentUser.name = fullName || 'Player #' + currentUser.number;
+    currentUser.displayName = formatWelcomeName(fullName) || currentUser.name;
+    currentUser.initials = fullName ? fullName.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : 'P';
+  } else {
+    const fullName = user.name || (currentUser.role === 'coach' ? 'Coach' : 'Admin');
+    currentUser.name = fullName;
+    currentUser.displayName = formatWelcomeName(fullName) || fullName;
+    currentUser.initials = fullName.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() || 'C';
+  }
+  document.getElementById('home-av').textContent = currentUser.initials;
+  document.getElementById('welcome-name').innerHTML = '<span>' + (currentUser.displayName || currentUser.name) + '</span>';
+  const isStaff = currentUser.role === 'coach' || currentUser.role === 'admin';
+  document.getElementById('role-badge').innerHTML = isStaff
+    ? '<span class="coach-badge">' + (currentUser.role === 'admin' ? 'Admin' : 'Coach') + '</span>' : '';
+  show('home');
 }
 
 // ── Boot ───────────────────────────────────────────────────────
-document.getElementById('email-in').addEventListener('keydown', e => { if(e.key==='Enter') checkEmail(); });
+document.getElementById('p-in').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('reg-email-in').addEventListener('keydown', e => { if(e.key==='Enter') sendSetupLink(); });
 
 loadData();
 </script>
