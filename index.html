@@ -246,7 +246,7 @@ firebase.auth().onAuthStateChanged(user => {
       <div class="field"><label>Create Password</label><input type="password" id="new-pass-in" placeholder="Min. 6 characters"/></div>
       <div class="field"><label>Confirm Password</label><input type="password" id="confirm-pass-in" placeholder="Repeat password"/></div>
       <button class="btn-primary" onclick="createAccount()">Complete Setup</button>
-      <div class="login-error" id="login-err3"></div>
+      <div class="login-error" id="login-err4" style="min-height:20px"></div>
     </div>
   </div>
 </div>
@@ -679,17 +679,17 @@ async function createAccount() {
     // Update sheet
     fetch(APPS_SCRIPT_URL + '?action=setHasAccount&email=' + encodeURIComponent(email)).catch(()=>{});
     
-    // Show success message
+    // Show success and redirect to login
     err.style.color = 'var(--green)';
-    err.textContent = '✓ Account created successfully! Signing you in...';
-    
-    // Short delay then login
-    await new Promise(r => setTimeout(r, 1500));
-    
-    // Find user entry
-    const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email.toLowerCase());
-    const userKey = userEntry ? userEntry[0] : email;
-    loginSuccess(userKey);
+    err.textContent = '✓ Password created! Please sign in with your email and new password.';
+    await new Promise(r => setTimeout(r, 2000));
+    // Go back to login screen
+    show('login');
+    document.getElementById('step-email').style.display = 'block';
+    document.getElementById('step-password').style.display = 'none';
+    document.getElementById('step-setpassword').style.display = 'none';
+    document.getElementById('step-createpassword').style.display = 'none';
+    document.getElementById('email-in').value = email;
     
   } catch(e) {
     console.error('createAccount error:', e.code, e.message);
