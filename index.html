@@ -725,6 +725,90 @@ function checkSetupLink() {
   console.log('Showing create password for:', email);
 }
 
+// ── Send setup link via EmailJS ───────────────────────────────
+async function sendSetupLink() {
+  const email = window._pendingEmail;
+  const err = document.getElementById('login-err3');
+  if (!email) { err.textContent = 'No email found. Please go back.'; return; }
+  err.style.color = 'var(--text2)';
+  err.textContent = 'Sending link...';
+  try {
+    const token = btoa(email + ':' + Date.now());
+    const setupLink = 'https://julian-fratta.github.io/Forge-App/?setup=' + encodeURIComponent(token);
+    const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email.toLowerCase());
+    const userName = userEntry ? (userEntry[1].name || email.split('@')[0]) : email.split('@')[0];
+    await emailjs.send('service_swiiwil', 'template_quyik0o', {
+      to_email: email,
+      to_name: userName,
+      from_name: 'Forge Performance',
+      reset_link: setupLink,
+      message: 'Welcome to Forge Performance! Click the link below to set up your password and access your performance data.',
+      reply_to: 'noreply@forgeperformance.com'
+    });
+    err.textContent = '';
+    showSetupLinkSent(email);
+  } catch(e) {
+    console.error('sendSetupLink error:', e);
+    err.style.color = 'var(--red)';
+    err.textContent = 'Error: ' + (e.text || e.message || JSON.stringify(e));
+  }
+}
+
+function showSetupLinkSent(email) {
+  window._verifyEmail = email;
+  document.getElementById('verify-email-display').textContent = email;
+  document.getElementById('verify-title').textContent = 'Check your email';
+  document.getElementById('verify-subtitle').textContent = 'We sent a password setup link to';
+  document.getElementById('verify-body').textContent = 'Click the link in the email to set your password directly in the app. Once done you will be signed in automatically.';
+  document.getElementById('resend-msg').textContent = '';
+  show('verify-screen');
+}
+
+function showVerificationPending(email) {
+  window._verifyEmail = email;
+  document.getElementById('verify-email-display').textContent = email;
+  document.getElementById('verify-title').textContent = 'Verify your email';
+  document.getElementById('verify-subtitle').textContent = 'Please verify your email before signing in.';
+  document.getElementById('verify-body').textContent = 'Check your inbox and click the verification link, then come back and sign in.';
+  document.getElementById('resend-msg').textContent = '';
+  show('verify-screen');
+}
+
+function backToLoginFromVerify() {
+  show('login');
+  document.getElementById('step-email').style.display = 'block';
+  document.getElementById('step-password').style.display = 'none';
+  document.getElementById('step-setpassword').style.display = 'none';
+  document.getElementById('step-createpassword').style.display = 'none';
+  document.getElementById('login-err').textContent = '';
+}
+
+async function resendSetupLink() {
+  const btn = document.getElementById('resend-btn');
+  const msg = document.getElementById('resend-msg');
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  try {
+    const email = window._verifyEmail;
+    const token = btoa(email + ':' + Date.now());
+    const setupLink = 'https://julian-fratta.github.io/Forge-App/?setup=' + encodeURIComponent(token);
+    await emailjs.send('service_swiiwil', 'template_quyik0o', {
+      to_email: email,
+      to_name: email.split('@')[0],
+      from_name: 'Forge Performance',
+      reset_link: setupLink,
+      message: 'Here is your new setup link for Forge Performance.',
+      reply_to: 'noreply@forgeperformance.com'
+    });
+    msg.textContent = 'Email resent!';
+    msg.style.color = 'var(--green)';
+  } catch(e) {
+    msg.textContent = 'Could not resend.';
+    msg.style.color = 'var(--red)';
+  }
+  setTimeout(() => { btn.disabled = false; btn.style.opacity = '1'; }, 30000);
+}
+
 // ── Boot ───────────────────────────────────────────────────────
 document.getElementById('email-in').addEventListener('keydown', e => { if(e.key==='Enter') checkEmail(); });
 
