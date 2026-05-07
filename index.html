@@ -551,6 +551,7 @@ async function loadData() {
   try {
     const res = await fetch(APPS_SCRIPT_URL);
     const raw = await res.json();
+    console.log('Data loaded - players:', (raw['Players']||[]).length, 'benchmarks:', (raw['Benchmarks (Matrix)']||[]).length);
     DB.players    = processPlayers(raw['Players'] || []);
     DB.benchmarks = processBenchmarks(raw['Benchmarks (Matrix)'] || []);
     DB.evaluation = processEvaluation(raw['Evaluation (Matrix)'] || []);
@@ -558,6 +559,7 @@ async function loadData() {
     DB.values     = processValues(raw['Values'] || []);
     DB.training   = processTraining(raw['Training Modules'] || []);
     processUsers(raw['Users'] || []);
+    console.log('DB ready - players:', DB.players.length, 'users:', Object.keys(USERS).length);
     show('login');
     // Check if user arrived via setup link in email
     checkSetupLink();
@@ -576,7 +578,6 @@ function processUsers(rows) {
     const num     = r['Player Number'] ? parseInt(r['Player Number']) : null;
     const name    = String(r['Player Name'] || '').trim();
     const hasAcct = String(r['Has Account'] || '').trim().toUpperCase() === 'YES';
-    console.log('User:', email1, 'hasAccount:', hasAcct);
     if (email1) USERS[email1] = { email: email1, role, number: num, name, hasAccount: hasAcct };
     if (email2) USERS[email2] = { email: email2, role, number: num, name, hasAccount: hasAcct };
   });
