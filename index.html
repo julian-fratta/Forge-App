@@ -181,7 +181,9 @@ window._firebaseAuth = _auth;
 window._firebaseFns = {
   signInWithEmailAndPassword: (auth, email, pass) => firebase.auth().signInWithEmailAndPassword(email, pass),
   createUserWithEmailAndPassword: (auth, email, pass) => firebase.auth().createUserWithEmailAndPassword(email, pass),
-  sendPasswordResetEmail: (auth, email) => firebase.auth().sendPasswordResetEmail(email),
+  sendPasswordResetEmail: (auth, email, settings) => firebase.auth().sendPasswordResetEmail(email, settings),
+  confirmPasswordReset: (auth, oobCode, newPassword) => firebase.auth().confirmPasswordReset(oobCode, newPassword),
+  verifyPasswordResetCode: (auth, oobCode) => firebase.auth().verifyPasswordResetCode(oobCode),
   fetchSignInMethodsForEmail: (auth, email) => firebase.auth().fetchSignInMethodsForEmail(email),
   sendSignInLinkToEmail: (auth, email, settings) => firebase.auth().sendSignInLinkToEmail(email, settings),
   isSignInWithEmailLink: (auth, link) => firebase.auth().isSignInWithEmailLink(link),
@@ -220,7 +222,7 @@ firebase.auth().onAuthStateChanged(user => {
       <div class="field"><label>Email</label><input type="email" id="email-in" placeholder="Enter your email" autocomplete="email"/></div>
       <div class="field"><label>Password</label><input type="password" id="p-in" placeholder="Enter your password" autocomplete="current-password"/></div>
       <button class="btn-primary" onclick="doLogin()">Sign In</button>
-      <button style="width:100%;background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;margin-top:10px;padding:8px" onclick="sendPasswordReset()">Forgot password?</button>
+      <button style="width:100%;background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;margin-top:10px;padding:8px" onclick="showForgotPassword()">Forgot password?</button>
       <div class="login-error" id="login-err" style="min-height:20px"></div>
       <div style="height:1px;background:var(--border);margin:16px 0"></div>
       <button style="width:100%;background:none;border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;padding:13px;font-family:'Barlow',sans-serif" onclick="showRegister()">Register Account</button>
@@ -243,13 +245,27 @@ firebase.auth().onAuthStateChanged(user => {
     <!-- CREATE PASSWORD: After clicking email link -->
     <div id="step-createpassword" style="display:none">
       <div style="background:rgba(29,185,84,0.1);border:1px solid rgba(29,185,84,0.3);border-radius:10px;padding:14px;margin-bottom:18px">
-        <p style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">✓ Email confirmed!</p>
-        <p style="font-size:13px;color:var(--text2);line-height:1.6">Create a password to complete your account setup.</p>
+        <p id="create-pw-title" style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">✓ Email confirmed!</p>
+        <p id="create-pw-desc" style="font-size:13px;color:var(--text2);line-height:1.6">Create a password to complete your account setup.</p>
       </div>
       <div class="field"><label>Create Password</label><input type="password" id="new-pass-in" placeholder="Min. 6 characters"/></div>
       <div class="field"><label>Confirm Password</label><input type="password" id="confirm-pass-in" placeholder="Repeat password"/></div>
-      <button class="btn-primary" onclick="createAccount()">Complete Setup</button>
+      <button id="create-pw-btn" class="btn-primary" onclick="createAccount()">Complete Setup</button>
       <div class="login-error" id="login-err4" style="min-height:20px;margin-top:10px"></div>
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div id="step-forgotpassword" style="display:none">
+      <button onclick="showSignIn()" style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text2);cursor:pointer;font-size:13px;padding:8px 12px;margin-bottom:20px;font-family:'Barlow',sans-serif">
+        &#8592; Back to Sign In
+      </button>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:18px;border:1px solid var(--border)">
+        <p style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">Reset your password</p>
+        <p style="font-size:13px;color:var(--text2);line-height:1.6">Enter your account email and we'll send you a reset link.</p>
+      </div>
+      <div class="field"><label>Email Address</label><input type="email" id="forgot-email-in" placeholder="Enter your email"/></div>
+      <button class="btn-primary" onclick="sendPasswordReset()">Send Reset Link</button>
+      <div class="login-error" id="login-err-forgot" style="min-height:20px;margin-top:10px"></div>
     </div>
 
   </div>
@@ -462,18 +478,27 @@ firebase.auth().onAuthStateChanged(user => {
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0bYsFFDeT8FCxMOwrr1fdhbrGxfBnJrxGI3Kb38JeBPWhG_2cO4UF_dPpuCdUsKXr/exec';
 
-// ── Read setup token immediately on page load ──────────────────
+// ── Read setup/reset token immediately on page load ────────────
 (function() {
   const params = new URLSearchParams(window.location.search);
+
+  // Registration setup link: ?setup=TOKEN
   const token = params.get('setup');
   if (token) {
     try {
       const decoded = atob(decodeURIComponent(token));
       const email = decoded.split(':')[0].toLowerCase();
-      // Store in window variable - persists for this page load
       window._setupEmail = email;
       window.history.replaceState({}, document.title, window.location.pathname);
     } catch(e) { console.error('Token decode error:', e); }
+  }
+
+  // Firebase password-reset link: ?mode=resetPassword&oobCode=xxx
+  const mode = params.get('mode');
+  const oobCode = params.get('oobCode');
+  if (mode === 'resetPassword' && oobCode) {
+    window._resetOobCode = oobCode;
+    window.history.replaceState({}, document.title, window.location.pathname);
   }
 })();
 
@@ -609,6 +634,7 @@ function showSignIn() {
   document.getElementById('step-signin').style.display = 'block';
   document.getElementById('step-register').style.display = 'none';
   document.getElementById('step-createpassword').style.display = 'none';
+  document.getElementById('step-forgotpassword').style.display = 'none';
   document.getElementById('login-err').textContent = '';
 }
 
@@ -618,6 +644,15 @@ function showRegister() {
   document.getElementById('step-createpassword').style.display = 'none';
   document.getElementById('login-err3').textContent = '';
   document.getElementById('reg-email-in').value = '';
+}
+
+function showForgotPassword() {
+  document.getElementById('step-signin').style.display = 'none';
+  document.getElementById('step-register').style.display = 'none';
+  document.getElementById('step-createpassword').style.display = 'none';
+  document.getElementById('step-forgotpassword').style.display = 'block';
+  document.getElementById('login-err-forgot').textContent = '';
+  document.getElementById('forgot-email-in').value = '';
 }
 
 // ── Sign In ────────────────────────────────────────────────────
@@ -654,33 +689,40 @@ async function doLogin() {
 }
 
 // ── Forgot Password ────────────────────────────────────────────
-async function sendPasswordReset() {
-  const email = document.getElementById('email-in').value.trim().toLowerCase();
-  const err = document.getElementById('login-err');
+async async function sendPasswordReset() {
+  const email = document.getElementById('forgot-email-in').value.trim().toLowerCase();
+  const err = document.getElementById('login-err-forgot');
   err.style.color = 'var(--red)';
-  if (!email) { err.textContent = 'Please enter your email first.'; return; }
+  if (!email || !email.includes('@')) { err.textContent = 'Please enter a valid email address.'; return; }
+  // Check the email is a registered account
   const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
-  if (!userEntry) { err.textContent = 'Email not found. Please contact your coach.'; return; }
+  if (!userEntry) {
+    err.textContent = 'That account is not registered. Please contact your coach.';
+    return;
+  }
   err.style.color = 'var(--text2)';
-  err.textContent = 'Sending reset link...';
+  err.textContent = 'Sending reset link…';
   try {
-    // Generate Firebase reset link
-    await window._firebaseFns.sendPasswordResetEmail(window._firebaseAuth, email);
-    // Also send via EmailJS with branded template
-    const userName = userEntry[1].name || email.split('@')[0];
-    await emailjs.send('service_swiiwil', 'template_3muhq1s', {
-      to_email: email,
-      to_name: userName,
-      from_name: 'Forge Performance',
-      reset_link: 'https://julian-fratta.github.io/Forge-App/',
-      message: 'You requested a password reset for your Forge Performance account. Check your inbox for a separate email from Firebase with the reset link, or tap "Forgot Password" again in the app.',
-      reply_to: 'noreply@forgeperformance.com'
+    await window._firebaseFns.sendPasswordResetEmail(window._firebaseAuth, email, {
+      url: 'https://julian-fratta.github.io/Forge-App/',
+      handleCodeInApp: true
     });
-    err.style.color = 'var(--green)';
-    err.textContent = '✓ Password reset email sent to ' + email;
+    // Replace step with confirmation card
+    document.getElementById('step-forgotpassword').innerHTML = `
+      <div style="text-align:center;padding:10px 0 4px">
+        <div style="width:60px;height:60px;background:rgba(26,110,245,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+          <svg viewBox="0 0 32 32" fill="none" style="width:30px;height:30px"><rect x="2" y="6" width="28" height="20" rx="4" stroke="#1a6ef5" stroke-width="2"/><path d="M2 10l14 9 14-9" stroke="#1a6ef5" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;margin-bottom:10px">Check your email</h2>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:4px">We sent a password reset link to</p>
+        <p style="font-size:15px;font-weight:600;color:var(--accent);margin-bottom:18px">${email}</p>
+        <p style="font-size:13px;color:var(--text3);line-height:1.7;margin-bottom:28px">Click the link in the email to set your new password. After resetting, come back here and sign in.</p>
+        <button onclick="showSignIn()" style="width:100%;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:10px;padding:13px;font-family:'Barlow Condensed',sans-serif;font-size:16px;cursor:pointer">Back to Sign In</button>
+      </div>`;
   } catch(e) {
     err.style.color = 'var(--red)';
     err.textContent = 'Could not send reset email. Please try again.';
+    console.error('sendPasswordReset error:', e);
   }
 }
 
@@ -720,52 +762,108 @@ async function sendSetupLink() {
 
 // ── Create Account (after clicking setup link) ─────────────────
 async function createAccount() {
-  const email = window._pendingEmail;
-  const pass = document.getElementById('new-pass-in').value;
+  const isReset = !!window._isPasswordReset;
+  const email   = isReset ? null            : window._pendingEmail;
+  const oobCode = isReset ? window._pendingOobCode : null;
+  const pass    = document.getElementById('new-pass-in').value;
   const confirm = document.getElementById('confirm-pass-in').value;
-  const err = document.getElementById('login-err4');
+  const err     = document.getElementById('login-err4');
   err.style.color = 'var(--red)';
-  if (!email) { err.textContent = 'Session expired. Please request a new setup link.'; return; }
-  if (pass.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return; }
-  if (pass !== confirm) { err.textContent = 'Passwords do not match.'; return; }
+
+  // Session guards
+  if (!isReset && !email)   { err.textContent = 'Session expired. Please request a new setup link.'; return; }
+  if (isReset  && !oobCode) { err.textContent = 'Session expired. Please request a new reset link.'; return; }
+
+  // Field validation
+  if (pass.length < 6)  { err.textContent = 'Password must be at least 6 characters.'; return; }
+  if (pass !== confirm)  { err.textContent = 'Passwords do not match.'; return; }
+
   err.style.color = 'var(--text2)';
-  err.textContent = 'Creating your account...';
+  err.textContent = isReset ? 'Updating your password…' : 'Creating your account…';
+
   try {
     const auth = window._firebaseAuth;
-    const fns = window._firebaseFns;
-    await fns.createUserWithEmailAndPassword(auth, email, pass);
-    // Update Has Account in sheet
-    fetch(APPS_SCRIPT_URL + '?action=setHasAccount&email=' + encodeURIComponent(email)).catch(()=>{});
-    // Sign out so user logs in fresh
-    await fns.signOut(auth);
-    err.style.color = 'var(--green)';
-    err.textContent = '✓ Account created! Please sign in with your email and new password.';
-    await new Promise(r => setTimeout(r, 2000));
-    // Go to sign in screen with email pre-filled
-    showSignIn();
-    document.getElementById('email-in').value = email;
-    document.getElementById('p-in').value = '';
-    document.getElementById('p-in').focus();
+    const fns  = window._firebaseFns;
+
+    if (isReset) {
+      // ── Password-reset path ──────────────────────────────────
+      await fns.verifyPasswordResetCode(auth, oobCode);   // throws if expired/invalid
+      await fns.confirmPasswordReset(auth, oobCode, pass);
+      window._pendingOobCode  = null;
+      window._isPasswordReset = false;
+      err.style.color    = 'var(--green)';
+      err.textContent    = '✓ Password updated! Please sign in with your new password.';
+      await new Promise(r => setTimeout(r, 2000));
+      showSignIn();
+    } else {
+      // ── New-account (registration) path ─────────────────────
+      await fns.createUserWithEmailAndPassword(auth, email, pass);
+      fetch(APPS_SCRIPT_URL + '?action=setHasAccount&email=' + encodeURIComponent(email)).catch(()=>{});
+      await fns.signOut(auth);
+      err.style.color = 'var(--green)';
+      err.textContent = '✓ Account created! Please sign in with your email and new password.';
+      await new Promise(r => setTimeout(r, 2000));
+      showSignIn();
+      document.getElementById('email-in').value = email;
+      document.getElementById('p-in').value = '';
+      document.getElementById('p-in').focus();
+    }
   } catch(e) {
     err.style.color = 'var(--red)';
-    err.textContent = e.code === 'auth/email-already-in-use'
-      ? 'Account already exists. Please sign in.'
-      : 'Error: ' + (e.message || e.code);
-    if (e.code === 'auth/email-already-in-use') {
-      setTimeout(() => { showSignIn(); document.getElementById('email-in').value = email; }, 2000);
+    if (isReset) {
+      const expired = ['auth/expired-action-code', 'auth/invalid-action-code'];
+      err.textContent = e.code === 'auth/expired-action-code'
+        ? 'Reset link expired. Please request a new one.'
+        : e.code === 'auth/invalid-action-code'
+        ? 'Invalid reset link. Please request a new one.'
+        : 'Error: ' + (e.message || e.code);
+      if (expired.includes(e.code)) { setTimeout(() => showSignIn(), 2500); }
+    } else {
+      err.textContent = e.code === 'auth/email-already-in-use'
+        ? 'Account already exists. Please sign in.'
+        : 'Error: ' + (e.message || e.code);
+      if (e.code === 'auth/email-already-in-use') {
+        setTimeout(() => { showSignIn(); document.getElementById('email-in').value = email; }, 2000);
+      }
     }
   }
 }
 
 // ── Check for setup link in URL ────────────────────────────────
 function checkSetupLink() {
+  function _showCreatePw() {
+    document.getElementById('step-signin').style.display = 'none';
+    document.getElementById('step-register').style.display = 'none';
+    document.getElementById('step-forgotpassword').style.display = 'none';
+    document.getElementById('step-createpassword').style.display = 'block';
+    // Clear any leftover field values
+    document.getElementById('new-pass-in').value = '';
+    document.getElementById('confirm-pass-in').value = '';
+    document.getElementById('login-err4').textContent = '';
+  }
+
+  // ── Password-reset path (arriving from Firebase reset email) ──
+  if (window._resetOobCode) {
+    window._pendingOobCode = window._resetOobCode;
+    window._resetOobCode = null;
+    window._isPasswordReset = true;
+    document.getElementById('create-pw-title').textContent = '🔑 Reset your password';
+    document.getElementById('create-pw-desc').textContent = 'Enter and confirm your new password below.';
+    document.getElementById('create-pw-btn').textContent = 'Set New Password';
+    _showCreatePw();
+    return;
+  }
+
+  // ── Registration setup path (arriving from EmailJS setup email) ──
   const email = window._setupEmail;
   if (!email) return;
   window._setupEmail = null;
   window._pendingEmail = email;
-  document.getElementById('step-signin').style.display = 'none';
-  document.getElementById('step-register').style.display = 'none';
-  document.getElementById('step-createpassword').style.display = 'block';
+  window._isPasswordReset = false;
+  document.getElementById('create-pw-title').textContent = '✓ Email confirmed!';
+  document.getElementById('create-pw-desc').textContent = 'Create a password to complete your account setup.';
+  document.getElementById('create-pw-btn').textContent = 'Complete Setup';
+  _showCreatePw();
 }
 
 // ── Logout ─────────────────────────────────────────────────────
