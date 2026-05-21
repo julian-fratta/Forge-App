@@ -689,7 +689,7 @@ async function doLogin() {
 }
 
 // ── Forgot Password ────────────────────────────────────────────
-async async function sendPasswordReset() {
+async function sendPasswordReset() {
   const email = document.getElementById('forgot-email-in').value.trim().toLowerCase();
   const err = document.getElementById('login-err-forgot');
   err.style.color = 'var(--red)';
