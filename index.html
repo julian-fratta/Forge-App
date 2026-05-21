@@ -221,16 +221,16 @@ firebase.auth().onAuthStateChanged(user => {
     <div id="step-signin" style="display:block">
       <div class="field"><label>Email</label><input type="email" id="email-in" placeholder="Enter your email" autocomplete="email"/></div>
       <div class="field"><label>Password</label><input type="password" id="p-in" placeholder="Enter your password" autocomplete="current-password"/></div>
-      <button class="btn-primary" onclick="doLogin()">Sign In</button>
-      <button style="width:100%;background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;margin-top:10px;padding:8px" onclick="showForgotPassword()">Forgot password?</button>
+      <button type="button" class="btn-primary" onclick="doLogin()">Sign In</button>
+      <button type="button" style="width:100%;background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;margin-top:10px;padding:8px" onclick="showForgotPassword()">Forgot password?</button>
       <div class="login-error" id="login-err" style="min-height:20px"></div>
       <div style="height:1px;background:var(--border);margin:16px 0"></div>
-      <button style="width:100%;background:none;border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;padding:13px;font-family:'Barlow',sans-serif" onclick="showRegister()">Register Account</button>
+      <button type="button" style="width:100%;background:none;border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;padding:13px;font-family:'Barlow',sans-serif" onclick="showRegister()">Register Account</button>
     </div>
 
     <!-- REGISTER: Enter email to get setup link -->
     <div id="step-register" style="display:none">
-      <button onclick="showSignIn()" style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text2);cursor:pointer;font-size:13px;padding:8px 12px;margin-bottom:20px;font-family:'Barlow',sans-serif">
+      <button type="button" onclick="showSignIn()" style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text2);cursor:pointer;font-size:13px;padding:8px 12px;margin-bottom:20px;font-family:'Barlow',sans-serif">
         ← Back to Sign In
       </button>
       <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:18px;border:1px solid var(--border)">
@@ -238,7 +238,7 @@ firebase.auth().onAuthStateChanged(user => {
         <p style="font-size:13px;color:var(--text2);line-height:1.6">Enter your email below. If it's registered, we'll send you a link to set up your password.</p>
       </div>
       <div class="field"><label>Email Address</label><input type="email" id="reg-email-in" placeholder="Enter your email"/></div>
-      <button class="btn-primary" onclick="sendSetupLink()">Send Setup Link</button>
+      <button type="button" class="btn-primary" onclick="sendSetupLink()">Send Setup Link</button>
       <div class="login-error" id="login-err3" style="min-height:20px;margin-top:10px"></div>
     </div>
 
@@ -250,13 +250,13 @@ firebase.auth().onAuthStateChanged(user => {
       </div>
       <div class="field"><label>Create Password</label><input type="password" id="new-pass-in" placeholder="Min. 6 characters"/></div>
       <div class="field"><label>Confirm Password</label><input type="password" id="confirm-pass-in" placeholder="Repeat password"/></div>
-      <button id="create-pw-btn" class="btn-primary" onclick="createAccount()">Complete Setup</button>
+      <button type="button" id="create-pw-btn" class="btn-primary" onclick="createAccount()">Complete Setup</button>
       <div class="login-error" id="login-err4" style="min-height:20px;margin-top:10px"></div>
     </div>
 
     <!-- FORGOT PASSWORD -->
     <div id="step-forgotpassword" style="display:none">
-      <button onclick="showSignIn()" style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text2);cursor:pointer;font-size:13px;padding:8px 12px;margin-bottom:20px;font-family:'Barlow',sans-serif">
+      <button type="button" onclick="showSignIn()" style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text2);cursor:pointer;font-size:13px;padding:8px 12px;margin-bottom:20px;font-family:'Barlow',sans-serif">
         &#8592; Back to Sign In
       </button>
       <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:18px;border:1px solid var(--border)">
@@ -264,7 +264,7 @@ firebase.auth().onAuthStateChanged(user => {
         <p style="font-size:13px;color:var(--text2);line-height:1.6">Enter your account email and we'll send you a reset link.</p>
       </div>
       <div class="field"><label>Email Address</label><input type="email" id="forgot-email-in" placeholder="Enter your email"/></div>
-      <button class="btn-primary" onclick="sendPasswordReset()">Send Reset Link</button>
+      <button type="button" class="btn-primary" onclick="sendPasswordReset()">Send Reset Link</button>
       <div class="login-error" id="login-err-forgot" style="min-height:20px;margin-top:10px"></div>
     </div>
 
@@ -279,7 +279,7 @@ firebase.auth().onAuthStateChanged(user => {
     <div class="hdr-right">
       <span id="role-badge"></span>
       <div class="avatar" id="home-av">C</div>
-      <button class="logout-btn" onclick="doLogout()">Out</button>
+      <button type="button" class="logout-btn" onclick="doLogout()">Out</button>
     </div>
   </div>
   <div class="home-body">
@@ -288,7 +288,7 @@ firebase.auth().onAuthStateChanged(user => {
       <h2 id="welcome-name"><span>Coach</span></h2>
     </div>
     <div class="tiles-grid">
-      <button class="tile t-blue" onclick="nav('benchmarks')">
+      <button type="button" class="tile t-blue" onclick="nav('benchmarks')">
         <div class="tile-arc"><svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;bottom:-10px;right:-10px;width:180px;height:180px;opacity:0.15">
 <circle cx="180" cy="180" r="40" stroke="white" stroke-width="1"/>
 <circle cx="180" cy="180" r="65" stroke="white" stroke-width="1"/>
@@ -304,7 +304,7 @@ firebase.auth().onAuthStateChanged(user => {
         <div class="tile-icon-wrap"><svg viewBox="0 0 32 32" fill="none"><rect x="2" y="18" width="6" height="12" rx="1.5" fill="white"/><rect x="13" y="11" width="6" height="19" rx="1.5" fill="white"/><rect x="24" y="5" width="6" height="25" rx="1.5" fill="white"/></svg></div>
         <span class="tile-label">Benchmarks</span>
       </button>
-      <button class="tile t-purple" onclick="nav('evaluation')">
+      <button type="button" class="tile t-purple" onclick="nav('evaluation')">
         <div class="tile-arc"><svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;bottom:-10px;right:-10px;width:180px;height:180px;opacity:0.15">
 <circle cx="180" cy="180" r="40" stroke="white" stroke-width="1"/>
 <circle cx="180" cy="180" r="65" stroke="white" stroke-width="1"/>
@@ -320,7 +320,7 @@ firebase.auth().onAuthStateChanged(user => {
         <div class="tile-icon-wrap"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12" stroke="white" stroke-width="2"/><path d="M10 16l4 4 8-8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <span class="tile-label">Evaluation</span>
       </button>
-      <button class="tile t-green" onclick="nav('feedback')">
+      <button type="button" class="tile t-green" onclick="nav('feedback')">
         <div class="tile-arc"><svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;bottom:-10px;right:-10px;width:180px;height:180px;opacity:0.15">
 <circle cx="180" cy="180" r="40" stroke="white" stroke-width="1"/>
 <circle cx="180" cy="180" r="65" stroke="white" stroke-width="1"/>
@@ -336,7 +336,7 @@ firebase.auth().onAuthStateChanged(user => {
         <div class="tile-icon-wrap"><svg viewBox="0 0 32 32" fill="none"><rect x="4" y="5" width="24" height="17" rx="3" stroke="white" stroke-width="2"/><path d="M9 12h14M9 17h8" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M10 22l6 5 6-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <span class="tile-label">Feedback</span>
       </button>
-      <button class="tile t-amber" onclick="nav('values')">
+      <button type="button" class="tile t-amber" onclick="nav('values')">
         <div class="tile-arc"><svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;bottom:-10px;right:-10px;width:180px;height:180px;opacity:0.15">
 <circle cx="180" cy="180" r="40" stroke="white" stroke-width="1"/>
 <circle cx="180" cy="180" r="65" stroke="white" stroke-width="1"/>
@@ -352,7 +352,7 @@ firebase.auth().onAuthStateChanged(user => {
         <div class="tile-icon-wrap"><svg viewBox="0 0 32 32" fill="none"><path d="M16 4l3 7 7.5 1-5.5 5.5 1.5 7.5L16 21l-6.5 4 1.5-7.5L5.5 12l7.5-1z" stroke="white" stroke-width="2" stroke-linejoin="round"/></svg></div>
         <span class="tile-label">Values</span>
       </button>
-      <button class="tile t-red tile-wide" onclick="nav('videos')">
+      <button type="button" class="tile t-red tile-wide" onclick="nav('videos')">
         <div class="tile-arc"><svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;bottom:-10px;right:-10px;width:180px;height:180px;opacity:0.15">
 <circle cx="180" cy="180" r="40" stroke="white" stroke-width="1"/>
 <circle cx="180" cy="180" r="65" stroke="white" stroke-width="1"/>
@@ -379,9 +379,9 @@ firebase.auth().onAuthStateChanged(user => {
 <!-- BENCHMARKS -->
 <div id="benchmarks" class="screen">
   <div class="header">
-    <button class="back-btn" onclick="nav('home')">&#8592;</button>
+    <button type="button" class="back-btn" onclick="nav('home')">&#8592;</button>
     <div class="header-title">Benchmarks</div>
-    <div class="hdr-right"><button id="add-btn" style="display:none" class="coach-badge" onclick="showModal()">+ Add</button></div>
+    <div class="hdr-right"><button type="button" id="add-btn" style="display:none" class="coach-badge" onclick="showModal()">+ Add</button></div>
   </div>
   <div class="search-bar"><div class="search-wrap"><input type="text" id="s-bench" placeholder="Search name or number..." oninput="renderList('benchmarks')"/></div></div>
   <div class="filter-bar" id="f-bench"></div>
@@ -391,7 +391,7 @@ firebase.auth().onAuthStateChanged(user => {
 <!-- EVALUATION -->
 <div id="evaluation" class="screen">
   <div class="header">
-    <button class="back-btn" onclick="nav('home')">&#8592;</button>
+    <button type="button" class="back-btn" onclick="nav('home')">&#8592;</button>
     <div class="header-title">Evaluation</div>
     <div class="hdr-right"></div>
   </div>
@@ -403,7 +403,7 @@ firebase.auth().onAuthStateChanged(user => {
 <!-- FEEDBACK -->
 <div id="feedback" class="screen">
   <div class="header">
-    <button class="back-btn" onclick="nav('home')">&#8592;</button>
+    <button type="button" class="back-btn" onclick="nav('home')">&#8592;</button>
     <div class="header-title">Feedback</div>
     <div class="hdr-right"></div>
   </div>
@@ -415,7 +415,7 @@ firebase.auth().onAuthStateChanged(user => {
 <!-- VALUES -->
 <div id="values" class="screen">
   <div class="header">
-    <button class="back-btn" onclick="nav('home')">&#8592;</button>
+    <button type="button" class="back-btn" onclick="nav('home')">&#8592;</button>
     <div class="header-title">Values</div>
     <div class="hdr-right"></div>
   </div>
@@ -427,7 +427,7 @@ firebase.auth().onAuthStateChanged(user => {
 <!-- TRAINING MODULES -->
 <div id="videos" class="screen">
   <div class="header">
-    <button class="back-btn" onclick="nav('home')">&#8592;</button>
+    <button type="button" class="back-btn" onclick="nav('home')">&#8592;</button>
     <div class="header-title">Training Modules</div>
     <div class="hdr-right"></div>
   </div>
@@ -437,7 +437,7 @@ firebase.auth().onAuthStateChanged(user => {
 <!-- PLAYER DETAIL -->
 <div id="player-detail" class="screen">
   <div class="header">
-    <button class="back-btn" id="detail-back">&#8592;</button>
+    <button type="button" class="back-btn" id="detail-back">&#8592;</button>
     <div class="header-title" id="detail-hdr">Player</div>
     <div class="hdr-right"></div>
   </div>
@@ -455,8 +455,8 @@ firebase.auth().onAuthStateChanged(user => {
     <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:6px" id="verify-subtitle">We sent a link to</p>
     <p style="font-size:15px;font-weight:600;color:var(--accent);margin-bottom:16px" id="verify-email-display"></p>
     <p style="font-size:13px;color:var(--text3);line-height:1.7;margin-bottom:28px" id="verify-body">Click the link to set your password, then come back and sign in with your email and password.</p>
-    <button class="btn-primary" onclick="backToLoginFromVerify()" style="margin-bottom:12px">Back to Sign In</button>
-    <button id="resend-btn" onclick="resendSetupLink()" style="background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;padding:8px">Resend email</button>
+    <button type="button" class="btn-primary" onclick="backToLoginFromVerify()" style="margin-bottom:12px">Back to Sign In</button>
+    <button type="button" id="resend-btn" onclick="resendSetupLink()" style="background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;padding:8px">Resend email</button>
     <div id="resend-msg" style="font-size:12px;color:var(--green);margin-top:8px;min-height:18px"></div>
   </div>
 </div>
@@ -469,8 +469,8 @@ firebase.auth().onAuthStateChanged(user => {
     <div class="field"><label>Player Name</label><input type="text" id="new-name" placeholder="First Last"/></div>
     <div class="field"><label>Team</label><select id="new-team"><option value="">Select team...</option></select></div>
     <div class="modal-btns">
-      <button class="btn-sec" onclick="closeModal()">Cancel</button>
-      <button class="btn-acc" onclick="addPlayer()">Add Player</button>
+      <button type="button" class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button type="button" class="btn-acc" onclick="addPlayer()">Add Player</button>
     </div>
   </div>
 </div>
@@ -717,7 +717,7 @@ async async function sendPasswordReset() {
         <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:4px">We sent a password reset link to</p>
         <p style="font-size:15px;font-weight:600;color:var(--accent);margin-bottom:18px">${email}</p>
         <p style="font-size:13px;color:var(--text3);line-height:1.7;margin-bottom:28px">Click the link in the email to set your new password. After resetting, come back here and sign in.</p>
-        <button onclick="showSignIn()" style="width:100%;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:10px;padding:13px;font-family:'Barlow Condensed',sans-serif;font-size:16px;cursor:pointer">Back to Sign In</button>
+        <button type="button" onclick="showSignIn()" style="width:100%;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:10px;padding:13px;font-family:'Barlow Condensed',sans-serif;font-size:16px;cursor:pointer">Back to Sign In</button>
       </div>`;
   } catch(e) {
     err.style.color = 'var(--red)';
