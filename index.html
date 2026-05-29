@@ -24,7 +24,7 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 
 /* LOADING */
 #loading{justify-content:center;align-items:center;gap:0;background:var(--bg)}
-.ls-logo-wrap{position:relative;width:190px;height:190px;border-radius:50%;margin-bottom:20px;animation:logoGlow 1.0s cubic-bezier(0.22,1,0.36,1) 0.4s both}.ls-logo-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}.ls-logo{display:block;width:122px;height:122px;object-fit:contain;object-position:center center;filter:brightness(2.5);animation:logoBuild 0.7s cubic-bezier(0.22,1,0.36,1) 0s both}.ls-title{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:700;letter-spacing:4px;color:var(--text);animation:textRise 0.45s cubic-bezier(0.22,1,0.36,1) 0.55s both}.ls-sub{font-size:11px;color:var(--text3);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:32px;animation:textRise 0.45s cubic-bezier(0.22,1,0.36,1) 0.7s both}.ls-spinner{animation:spin 0.8s linear infinite,spinnerFade 0.4s ease 0.85s both}
+.ls-logo-wrap{position:relative;width:190px;height:190px;border-radius:50%;margin-bottom:20px;animation:logoGlow 0.8s cubic-bezier(0.22,1,0.36,1) 0.25s both}.ls-logo-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}.ls-logo{display:block;width:122px;height:122px;object-fit:contain;object-position:center center;filter:brightness(2.5);animation:logoBuild 0.5s cubic-bezier(0.22,1,0.36,1) 0s both}.ls-title{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:700;letter-spacing:4px;color:var(--text);animation:textRise 0.35s cubic-bezier(0.22,1,0.36,1) 0.35s both}.ls-sub{font-size:11px;color:var(--text3);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:32px;animation:textRise 0.35s cubic-bezier(0.22,1,0.36,1) 0.45s both}.ls-spinner{animation:spin 0.8s linear infinite,spinnerFade 0.3s ease 0.5s both}
 .logo-mark{width:64px;height:64px;background:var(--accent);border-radius:16px;display:flex;align-items:center;justify-content:center}
 .logo-mark svg{width:38px;height:38px}
 .spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
@@ -515,16 +515,62 @@ function processEvaluation(rows) {
   });
 }
 
-function processFeedback(rows) {
-  return rows.filter(r => r['Player Number']).map(r => {
-    const great = String(r['One Great Thing'] || '');
-    const improve = String(r['One To Improve'] || '');
-    return {
-      num: parseInt(r['Player Number']),
-      great: great === 'Write Feedback' ? '' : great,
-      improve: improve === 'Write Feedback' ? '' : improve
-    };
+function processFeedback(rows, players) {
+  if (!rows.length) return [];
+  const headers = Object.keys(rows[0]);
+
+  const find = (patterns) =>
+    headers.find(h => patterns.some(p => h.trim().toLowerCase() === p)) ||
+    headers.find(h => patterns.some(p => h.trim().toLowerCase().includes(p))) ||
+    null;
+
+  // Locate columns
+  const numCol     = find(['player number','player num','player #','number','num','#']) || headers[0];
+  const nameCol    = find(['player name','name','full name','player']);
+  const greatCol   = find(['one great thing','great thing','great','strength']);
+  const improveCol = find(['one to improve','to improve','improve','improvement','one thing to improve']);
+
+  if (!greatCol && !improveCol) return [];
+
+  const skip = ['write feedback','n/a','none','','0','null','undefined','-'];
+
+  // Build a name→number lookup from the Players sheet so we can
+  // cross-reference when the Pivotal Feedback sheet uses sequential row
+  // numbers instead of real player numbers.
+  const nameToNum = {};
+  (players || []).forEach(p => {
+    if (p.name) nameToNum[p.name.trim().toLowerCase()] = p.num;
   });
+
+  const results = [];
+  rows.forEach(r => {
+    const great   = greatCol   ? String(r[greatCol]   || '').trim() : '';
+    const improve = improveCol ? String(r[improveCol] || '').trim() : '';
+
+    // Skip rows with no feedback at all
+    if (skip.includes(great.toLowerCase()) && skip.includes(improve.toLowerCase())) return;
+
+    // Resolve player number: try the number column first,
+    // then fall back to looking up by player name.
+    let num = parseInt(r[numCol]);
+    if (nameCol) {
+      const rawName = String(r[nameCol] || '').trim().toLowerCase();
+      const numByName = nameToNum[rawName];
+      // If the name lookup gives a DIFFERENT (and valid) number, trust it —
+      // this handles sheets that have sequential row numbers instead of real IDs.
+      if (numByName && numByName !== num) num = numByName;
+    }
+
+    if (!num || isNaN(num)) return; // skip rows we cannot resolve
+
+    results.push({
+      num,
+      great:   skip.includes(great.toLowerCase())   ? '' : great,
+      improve: skip.includes(improve.toLowerCase()) ? '' : improve
+    });
+  });
+
+  return results;
 }
 
 function processValues(rows) {
@@ -552,7 +598,7 @@ function processTraining(rows) {
 async function loadData() {
   show('loading');
   try {
-    const res = await fetch(APPS_SCRIPT_URL);
+    const res = await fetch(APPS_SCRIPT_URL + '?t=' + Date.now());
     const raw = await res.json();
     console.log('Data loaded - players:', (raw['Players']||[]).length, 'benchmarks:', (raw['Benchmarks (Matrix)']||[]).length);
     console.log('Sheets returned by Apps Script:', Object.keys(raw));
@@ -560,7 +606,7 @@ async function loadData() {
     DB.players    = processPlayers(raw['Players'] || []);
     DB.benchmarks = processBenchmarks(raw['Benchmarks (Matrix)'] || []);
     DB.evaluation = processEvaluation(raw['Evaluation (Matrix)'] || []);
-    DB.feedback   = processFeedback(raw['Pivotal Feedback'] || []);
+    DB.feedback   = processFeedback(raw['Pivotal Feedback'] || [], DB.players);
     DB.values     = processValues(raw['Values'] || []);
     DB.training    = processTraining(raw['Training Modules'] || []);
     DB.fundamental = processBehaviorSheet(raw['Fundamental Behaviors'] || []);
@@ -614,6 +660,8 @@ function nav(id) {
     showDetail(currentUser.number, id);
     return;
   }
+  // Re-fetch data when going home so sheet edits appear without manual refresh
+  if (id === 'home') { loadData().then(() => { show('home'); }); return; }
   show(id);
   if (sections.includes(id)) { teamFilter = 'All'; renderList(id); }
   if (id === 'videos') renderTraining();
