@@ -660,8 +660,28 @@ function nav(id) {
     showDetail(currentUser.number, id);
     return;
   }
-  // Re-fetch data when going home so sheet edits appear without manual refresh
-  if (id === 'home') { loadData().then(() => { show('home'); }); return; }
+  if (id === 'home') {
+    // Show home instantly — no loading screen
+    show('home');
+    // Then silently refresh data in the background so sheet changes appear
+    // next time the user opens a section, without interrupting navigation
+    setTimeout(() => {
+      fetch(APPS_SCRIPT_URL + '?t=' + Date.now())
+        .then(r => r.json())
+        .then(raw => {
+          DB.players    = processPlayers(raw['Players'] || []);
+          DB.benchmarks = processBenchmarks(raw['Benchmarks (Matrix)'] || []);
+          DB.evaluation = processEvaluation(raw['Evaluation (Matrix)'] || []);
+          DB.feedback   = processFeedback(raw['Pivotal Feedback'] || [], DB.players);
+          DB.values     = processValues(raw['Values'] || []);
+          DB.training   = processTraining(raw['Training Modules'] || []);
+          DB.fundamental = processBehaviorSheet(raw['Fundamental Behaviors'] || []);
+          DB.skillbeh   = processBehaviorSheet(raw['Skill Behaviors'] || []);
+        })
+        .catch(() => {}); // silent fail — user already has current data
+    }, 400); // small delay so home renders first
+    return;
+  }
   show(id);
   if (sections.includes(id)) { teamFilter = 'All'; renderList(id); }
   if (id === 'videos') renderTraining();
