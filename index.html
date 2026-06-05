@@ -41,7 +41,7 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 @keyframes textRise{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes spinnerFade{0%{opacity:0}100%{opacity:1}}
 .load-label{font-size:13px;color:var(--text2);letter-spacing:1px}
-.load-err{color:var(--red);font-size:13px;text-align:center;padding:0 2rem;line-height:1.7;display:none}
+.load-err{color:var(--red);font-size:13px;text-align:center;padding:0 2rem;line-height:1.7;display:none}.ls-quote{padding:0 28px;text-align:center;margin-top:22px;pointer-events:none}.ls-quote-text{font-family:'Barlow',sans-serif;font-style:italic;font-size:13px;font-weight:400;line-height:1.65;color:#c9a84c;letter-spacing:0.3px;opacity:0;transition:opacity 0.7s ease}.ls-quote-text.visible{opacity:1}
 
 /* LOGIN */
 #login{justify-content:center;align-items:center;padding:2.5rem 2rem;background:var(--bg)}
@@ -227,6 +227,7 @@ firebase.auth().onAuthStateChanged(user => {
   <div class="spinner ls-spinner"></div>
   <div class="load-label">Loading player data...</div>
   <div class="load-err" id="load-err">Unable to load data. Please check your connection and refresh the page.</div>
+  <div class="ls-quote"><p class="ls-quote-text" id="ls-quote-text"></p></div>
 </div>
 
 <!-- LOGIN -->
@@ -1273,6 +1274,31 @@ function addPlayer(){
 // ── Boot ───────────────────────────────────────────────────────
 document.getElementById('p-in').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 document.getElementById('reg-email-in').addEventListener('keydown', e => { if(e.key==='Enter') sendSetupLink(); });
+
+// ── Loading screen quote rotator ─────────────────────────────────────
+const LS_QUOTES = ['There are only two ways to live your life. One is as though nothing is a miracle. The other is as though everything is a miracle.', 'Success comes from knowing that you did your best to become the best that you are capable of becoming.', "You can't live a perfect day until you do something for someone who will never be able to repay you.", 'Winning takes talent, to repeat takes character.', 'We can do no great things, only small things with great love.', 'Quality is not an act, it is a habit.', 'Logic will get you from A to Z; imagination will get you everywhere.'];
+(function startQuoteRotator() {
+  const el = document.getElementById('ls-quote-text');
+  if (!el) return;
+  let last = -1;
+  function pickQuote() {
+    let idx;
+    do { idx = Math.floor(Math.random() * LS_QUOTES.length); } while (idx === last);
+    last = idx;
+    return LS_QUOTES[idx];
+  }
+  function showQuote() {
+    el.classList.remove('visible');
+    setTimeout(() => {
+      el.textContent = '"' + pickQuote() + '"';
+      el.classList.add('visible');
+    }, 700);  // wait for fade-out before swapping text
+  }
+  // Show first quote after logo animation settles
+  setTimeout(showQuote, 1000);
+  // Rotate every 3.5 seconds
+  setInterval(showQuote, 4500);
+})();
 
 loadData();
 </script>
