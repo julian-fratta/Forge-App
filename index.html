@@ -41,7 +41,7 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 @keyframes textRise{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes spinnerFade{0%{opacity:0}100%{opacity:1}}
 .load-label{font-size:13px;color:var(--text2);letter-spacing:1px}
-.load-err{color:var(--red);font-size:13px;text-align:center;padding:0 2rem;line-height:1.7;display:none}.ls-quote{padding:0 28px;text-align:center;margin-top:22px;pointer-events:none}.ls-quote-text{font-family:'Barlow',sans-serif;font-style:italic;font-size:13px;font-weight:400;line-height:1.65;color:#c9a84c;letter-spacing:0.3px;opacity:0;transition:opacity 0.7s ease}.ls-quote-text.visible{opacity:1}
+.load-err{color:var(--red);font-size:13px;text-align:center;padding:0 2rem;line-height:1.7;display:none}.ls-quote{padding:0 28px;text-align:center;margin-top:22px;min-height:68px;display:flex;align-items:center;justify-content:center;pointer-events:none}.ls-quote-text{font-family:'Barlow',sans-serif;font-style:italic;font-size:13px;font-weight:400;line-height:1.65;color:#c9a84c;letter-spacing:0.3px;opacity:0;transition:opacity 1.1s ease-in-out}.ls-quote-text.visible{opacity:1}
 
 /* LOGIN */
 #login{justify-content:center;align-items:center;padding:2.5rem 2rem;background:var(--bg)}
@@ -1292,12 +1292,12 @@ const LS_QUOTES = ['There are only two ways to live your life. One is as though 
     setTimeout(() => {
       el.textContent = '"' + pickQuote() + '"';
       el.classList.add('visible');
-    }, 700);  // wait for fade-out before swapping text
+    }, 1100);  // wait for fade-out before swapping text
   }
   // Show first quote after logo animation settles
   setTimeout(showQuote, 1000);
   // Rotate every 3.5 seconds
-  setInterval(showQuote, 4500);
+  setInterval(showQuote, 6000);
 })();
 
 loadData();
