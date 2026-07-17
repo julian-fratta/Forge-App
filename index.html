@@ -57,12 +57,17 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
 /* HEADER */
-.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}.forge-wordmark{font-family:"Barlow",sans-serif;font-size:12px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.55);flex:1;text-align:center;pointer-events:none;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.header{position:relative;background:var(--bg2);border-bottom:1px solid var(--border);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.forge-wordmark{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;max-width:calc(100% - 130px);line-height:1.12}
+.forge-wordmark-main{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.92);white-space:nowrap}
+.forge-wordmark-sub{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:3.4px;text-transform:uppercase;color:var(--forge-gold);opacity:.8;margin-top:1px;white-space:nowrap}
 .header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1px;color:var(--text)}
 .back-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:22px;padding:0;width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
 .hdr-right{display:flex;align-items:center;gap:8px;min-width:40px;justify-content:flex-end}
-.avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--on-accent);flex-shrink:0}
-.logout-btn{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--text2);cursor:pointer;font-size:11px;padding:5px 9px;font-family:'Barlow',sans-serif}
+.avatar{position:relative;width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--on-accent);flex-shrink:0}
+.avatar.tappable{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.avatar.tappable:hover{transform:scale(1.06);box-shadow:0 0 0 3px rgba(201,162,39,.25)}
+.avatar.tappable::after{content:'';position:absolute;inset:-6px;border-radius:50%}
 .coach-badge{background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:4px;text-transform:uppercase}
 
 /* HOME */
@@ -90,6 +95,8 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .tile-arc-svg{position:absolute;will-change:transform}
 .tile-icon-wrap{position:relative;z-index:2;margin-bottom:14px;opacity:0.9}
 .tile-icon-wrap svg{width:54px;height:54px}
+.home-quote-wrap{container-type:inline-size;margin-top:4px;padding:14px 6px 4px;text-align:center;border-top:1px solid var(--border)}
+.home-quote{display:inline-block;max-width:100%;font-family:'Barlow',sans-serif;font-style:italic;line-height:1.4;letter-spacing:0.3px;color:var(--text2);white-space:nowrap;font-size:clamp(9px,2.6cqw,13px)}
 
 /* LIST SCREENS */
 .search-bar{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
@@ -112,8 +119,9 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .no-data{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:14px}
 
 /* DETAIL */
-.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 16px}
-.tab{padding:10px 14px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab{padding:10px 14px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;flex-shrink:0}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .tab-content{display:none}
 .tab-content.active{display:block}
@@ -139,6 +147,28 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .fb-great .fb-label{color:var(--green)}
 .fb-improve .fb-label{color:var(--amber)}
 
+/* SELF EVAL / SELF FEEDBACK */
+.self-eval-row{display:flex;align-items:center;gap:12px;padding:11px 13px;background:var(--bg3);border-radius:8px;margin-bottom:5px;border:1px solid var(--border)}
+.self-eval-row .mname{flex:0 0 auto;min-width:82px}
+.self-eval-slider{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--bg4);outline:none;cursor:pointer}
+.self-eval-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.self-eval-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);border:none;cursor:pointer}
+.self-eval-readout{flex:0 0 auto;width:24px;text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;color:var(--text)}
+.self-fb-textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;line-height:1.5;resize:vertical;min-height:90px;outline:none;transition:border-color .2s}
+.self-fb-textarea:focus{border-color:var(--accent)}
+.self-fb-textarea:disabled{color:var(--text2);opacity:0.85}
+.archive-wrap{margin-top:18px}
+.archive-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;padding:12px 2px;cursor:pointer;color:var(--text2);font-family:'Barlow',sans-serif;font-size:12px;letter-spacing:.5px;text-transform:uppercase;border-top:1px solid var(--border)}
+.archive-arrow{font-size:10px;color:var(--text3)}
+.archive-list{display:none;flex-direction:column;gap:8px;margin-top:8px}
+.archive-list.open{display:flex}
+.archive-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.archive-date{font-size:11px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px}
+.archive-eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 22px}
+.archive-eval-item{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.archive-eval-item .k{color:var(--text2);font-size:13px}
+.archive-eval-item .v{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--forge-gold)}
+
 /* ADD MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:flex-end;justify-content:center}
 .modal-overlay.hidden{display:none}
@@ -148,6 +178,30 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .modal-btns{display:flex;gap:10px;margin-top:16px}
 .btn-sec{flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:10px;padding:13px;font-family:'Barlow Condensed',sans-serif;font-size:16px;cursor:pointer}
 .btn-acc{flex:1;background:var(--accent);color:var(--on-accent);border:none;border-radius:10px;padding:13px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;cursor:pointer}
+
+/* SIDE MENU DRAWER */
+.drawer-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);display:flex;justify-content:center}
+.drawer-overlay.hidden{display:none}
+.drawer-shell{position:relative;width:100%;max-width:430px;height:100%;display:flex;justify-content:flex-end;overflow:hidden}
+.drawer{width:84%;max-width:340px;height:100%;background:var(--bg2);border-left:1px solid var(--border2);overflow-y:auto;padding:18px 18px 32px;box-shadow:-12px 0 40px rgba(0,0,0,.5);animation:drawerIn .26s cubic-bezier(.25,.46,.45,.94) both}
+@keyframes drawerIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.drawer-user{display:flex;align-items:center;gap:11px;min-width:0}
+.drawer-user .avatar{width:42px;height:42px;font-size:15px}
+.drawer-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drawer-role{font-size:12px;color:var(--text2);margin-top:1px}
+.drawer-close{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.drawer-close:hover{background:var(--bg3)}
+.drawer-logout{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);cursor:pointer;padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;letter-spacing:.5px;margin-bottom:22px;transition:border-color .15s}
+.drawer-logout:hover{border-color:var(--red);color:var(--red)}
+.drawer-section h4{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);margin-bottom:4px}
+.drawer-hint{font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:14px}
+.rating-band{margin-bottom:15px}
+.rating-band-hdr{font-family:'Barlow Condensed',sans-serif;font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.rating-item{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--border)}
+.rating-num{flex:0 0 auto;width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px}
+.rating-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.rating-desc{font-size:12px;line-height:1.5;color:var(--text2)}
 
 /* COMING SOON */
 .cs-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center}
@@ -181,14 +235,17 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
   body{background:radial-gradient(ellipse at top, var(--forge-navy2) 0%, var(--forge-navy) 55%, #060910 100%)}
   #app{max-width:480px;margin:32px auto;min-height:calc(100vh - 64px);max-height:calc(100vh - 64px);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,0.55);overflow-y:auto}
   .screen{min-height:100%}
+  .drawer-shell{max-width:480px}
 }
 @media (min-width:1024px){
   #app{max-width:560px}
+  .drawer-shell{max-width:560px}
   .tab-content.active{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;align-content:start}
   .tab-content.active>.avg-badge,.tab-content.active>.chart-section,.tab-content.active>.no-data{grid-column:1/-1}
 }
 @media (min-width:1440px){
   #app{max-width:620px;margin:48px auto;min-height:calc(100vh - 96px);max-height:calc(100vh - 96px)}
+  .drawer-shell{max-width:620px}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
@@ -196,6 +253,7 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 <script>emailjs.init("8Ul0RVc6STSvL4wja");</script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyBI3EE638KidKbw4iTk8DOJMCYBSJQoJIE",
@@ -208,6 +266,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const _auth = firebase.auth();
 window._firebaseAuth = _auth;
+window._db = firebase.firestore();
 window._firebaseFns = {
   signInWithEmailAndPassword: (auth, email, pass) => firebase.auth().signInWithEmailAndPassword(email, pass),
   createUserWithEmailAndPassword: (auth, email, pass) => firebase.auth().createUserWithEmailAndPassword(email, pass),
@@ -227,18 +286,11 @@ firebase.auth().onAuthStateChanged(user => {
 </head>
 <body>
 <div id="app">
-<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
-  <symbol id="forge-f" viewBox="0 0 120 120">
-    <polygon points="45.8,10 61.8,10 43.8,110 27.8,110"/>
-    <polygon points="61.8,10 105.8,10 102.92,26 58.92,26"/>
-    <polygon points="54.24,52 88.24,52 85.36,68 51.36,68"/>
-  </symbol>
-</svg>
 
 <!-- LOGIN -->
 <div id="login" class="screen active">
   <div class="login-logo">
-    <svg viewBox="0 0 120 120" style="width:90px;height:90px;margin-bottom:10px;fill:var(--forge-gold)" aria-hidden="true"><use href="#forge-f"></use></svg>
+    <img src="icons/forge-logo-gold.png" alt="Forge" style="width:90px;height:90px;object-fit:contain;margin-bottom:10px">
     <h1>FORGE</h1>
     <p>Performance Analytics</p>
   </div>
@@ -302,12 +354,11 @@ firebase.auth().onAuthStateChanged(user => {
 <div id="home" class="screen">
   
   <div class="header">
-    <svg viewBox="0 0 120 120" style="width:36px;height:36px;fill:var(--forge-gold);flex-shrink:0" aria-hidden="true"><use href="#forge-f"></use></svg>
-    <span class="forge-wordmark">Forge</span>
+    <img src="icons/forge-logo-gold.png" alt="Forge" style="width:36px;height:36px;object-fit:contain;flex-shrink:0">
+    <span class="forge-wordmark"><span class="forge-wordmark-main">Forge</span><span class="forge-wordmark-sub">Performance</span></span>
     <div class="hdr-right">
       <span id="role-badge"></span>
-      <div class="avatar" id="home-av">C</div>
-      <button type="button" class="logout-btn" onclick="doLogout()">Log Out</button>
+      <div class="avatar tappable" id="home-av" onclick="openMenu()" title="Menu" role="button" tabindex="0">C</div>
     </div>
   </div>
   <div class="home-body">
@@ -348,8 +399,8 @@ firebase.auth().onAuthStateChanged(user => {
         <span class="tile-label">Forge Behaviors</span>
       </button>
     </div>
-    <div style="padding:14px 4px 4px;text-align:center">
-      <p style="font-family:'Barlow',sans-serif;font-size:10.5px;color:rgba(255,255,255,0.65);letter-spacing:0.4px;line-height:1.4;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">"Excellence is the sum of the millions of small, honest actions"</p>
+    <div class="home-quote-wrap">
+      <p class="home-quote">"Excellence is the sum of the millions of small, honest actions"</p>
     </div>
   </div>
 </div>
@@ -462,6 +513,30 @@ firebase.auth().onAuthStateChanged(user => {
     <div class="modal-btns">
       <button type="button" class="btn-sec" onclick="closeModal()">Cancel</button>
       <button type="button" class="btn-acc" onclick="addPlayer()">Add Player</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDE MENU DRAWER -->
+<div class="drawer-overlay hidden" id="menu-drawer" onclick="closeMenu()">
+  <div class="drawer-shell">
+    <div class="drawer" onclick="event.stopPropagation()">
+      <div class="drawer-head">
+        <div class="drawer-user">
+          <div class="avatar" id="drawer-av">C</div>
+          <div style="min-width:0">
+            <div class="drawer-name" id="drawer-name">—</div>
+            <div class="drawer-role" id="drawer-role">—</div>
+          </div>
+        </div>
+        <button type="button" class="drawer-close" onclick="closeMenu()" aria-label="Close menu">&times;</button>
+      </div>
+      <button type="button" class="drawer-logout" onclick="closeMenu();doLogout()">Log Out</button>
+      <div class="drawer-section">
+        <h4>Rating Scale</h4>
+        <p class="drawer-hint">What each 1&ndash;10 score means when a coach or player rates a skill or attribute.</p>
+        <div id="rating-scale-mount"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -632,6 +707,105 @@ async function loadData() {
     console.error(e);
     throw new Error('DATA_LOAD_FAILED');
   }
+}
+
+// ── Player self-eval / self-feedback (Firestore) ────────────────
+// Nothing here touches the Google Sheet — this is a separate, app-only
+// store for player-authored data. One doc per save (never overwritten),
+// so the save history doubles as the "look back on old entries" archive.
+const SELF_EVAL_KEYS = ['Respectful','Industrious','Student','Enduring','United','Passionate'];
+const selfDataCache = {}; // `${collection}:${playerNum}` -> [current, ...archive]
+
+function todayISO() { return new Date().toISOString().slice(0,10); }
+
+async function fetchSelfData(collection, playerNum) {
+  const cacheKey = collection + ':' + playerNum;
+  if (selfDataCache[cacheKey]) return selfDataCache[cacheKey];
+  // Filter only (no server-side orderBy) so this needs no composite index in
+  // Firestore — datasets are a handful of entries per player, so we sort
+  // newest-first in-app instead.
+  const snap = await window._db.collection(collection)
+    .where('playerNum', '==', playerNum)
+    .get();
+  const entries = snap.docs.map(d => d.data());
+  entries.sort((a, b) => {
+    const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+    const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+    return tb - ta; // newest first
+  });
+  selfDataCache[cacheKey] = entries;
+  return entries;
+}
+
+async function saveSelfDoc(collection, playerNum, fields) {
+  const cacheKey = collection + ':' + playerNum;
+  await window._db.collection(collection).add({
+    playerNum,
+    date: todayISO(),
+    ...fields,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  delete selfDataCache[cacheKey]; // force a refetch that includes the new entry
+}
+
+// ── Coach-data history ("Past Entries" for sheet-sourced categories) ──────
+// The Google Sheet keeps only current values, so we snapshot on view: each
+// time a profile is opened, compare the live sheet data to the last stored
+// snapshot and record a new dated one if it changed. Because we always store
+// current-on-change, the newest snapshot == current live data, so past
+// entries = snapshots minus the newest. History only builds going forward;
+// past sheet edits already overwritten cannot be recovered.
+const HISTORY_CACHE = {}; // playerNum -> [all history docs for that player, newest first]
+
+// Stable signature of a category's values, ignoring identity/derived fields
+// so re-computed averages and float noise don't register as false changes.
+function computeSig(values) {
+  return Object.keys(values)
+    .filter(k => k !== 'num' && k !== 'Average')
+    .sort()
+    .map(k => k + '=' + values[k])
+    .join('|');
+}
+
+async function fetchHistory(playerNum) {
+  if (HISTORY_CACHE[playerNum]) return HISTORY_CACHE[playerNum];
+  const snap = await window._db.collection('history')
+    .where('playerNum', '==', playerNum)
+    .get();
+  const docs = snap.docs.map(d => d.data());
+  docs.sort((a, b) => {
+    const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+    const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+    return tb - ta; // newest first
+  });
+  HISTORY_CACHE[playerNum] = docs;
+  return docs;
+}
+
+// Records a snapshot if this category's current values differ from the most
+// recent stored snapshot (or if none exists yet and there is real data).
+// Returns the newest-first list of snapshots for this category, with the
+// just-written one guaranteed at the front (deterministic — we don't re-read
+// and trust the server timestamp, which can be briefly unresolved).
+async function maybeSnapshot(category, playerNum, currentValues) {
+  const all = await fetchHistory(playerNum);
+  const forCat = all.filter(d => d.category === category);
+  const sig = computeSig(currentValues);
+  const hasData = Object.keys(currentValues).some(k => k !== 'num' && k !== 'Average');
+  if (!hasData) return forCat;
+  if (forCat.length && forCat[0].sig === sig) return forCat; // unchanged since last snapshot
+  const newEntry = { playerNum, category, values: { ...currentValues }, sig, date: todayISO() };
+  try {
+    await window._db.collection('history').add({
+      ...newEntry,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    delete HISTORY_CACHE[playerNum]; // next view re-reads fresh from server
+  } catch (e) {
+    console.error('history write failed', category, e);
+    return forCat; // couldn't persist — show existing history, don't fabricate
+  }
+  return [newEntry, ...forCat];
 }
 
 function processUsers(rows) {
@@ -985,6 +1159,60 @@ function doLogout() {
   document.getElementById('p-in').value = '';
 }
 
+// ── Side menu drawer (avatar → Log Out + rating scale) ─────────────────
+const RATING_BANDS = [
+  { range:'1–2', title:'Very Poor to Poor', color:'#E5675F', items:[
+    ['1','Extreme Difficulty','Struggles significantly with the skill or attribute, showing minimal understanding or execution. Performances are often incorrect or unsuccessful.'],
+    ['2','Below Average','Limited understanding or ability in this area. May show some success but is inconsistent and lacks refinement.']
+  ]},
+  { range:'3–4', title:'Fair to Below Average', color:'#E39A4E', items:[
+    ['3','Needs Substantial Improvement','Has a basic level of ability but lacks consistency and effectiveness. May perform under very low pressure but struggles when the game intensifies.'],
+    ['4','Fair','Shows initial basic competence but still lacks consistency and fundamental concepts. Often makes mistakes or misreads situations, especially under pressure or in complex scenarios.']
+  ]},
+  { range:'5–6', title:'Average to Above Average', color:'#D9B54A', items:[
+    ['5','Average','Meets the basic expectations for the skill or attribute. Competent, but with significant room for improvement. Performs well in some situations but fails in others.'],
+    ['6','Solid / Competent','Demonstrates a functional level of performance. Reliable in execution but may lack the finesse or speed of higher levels. Decision-making and technical ability are adequate for their level.']
+  ]},
+  { range:'7–8', title:'Good to Very Good', color:'#57C08A', items:[
+    ['7','Good','Consistently demonstrates solid technical ability and decision-making. Performs the skill well under normal game conditions and shows promise in more complex situations. Contributes effectively to the team.'],
+    ['8','Very Good','Advanced technical ability and understanding of the game. Makes fewer mistakes and performs at a high level under pressure. Developing consistency and showing leadership qualities in their role.']
+  ]},
+  { range:'9–10', title:'Excellent to Elite', color:'#46B39B', items:[
+    ['9','Excellent','Exceptional skill, understanding, and consistency. Execution is nearly flawless, performing under the most challenging circumstances. Contributes significantly and is often a standout performer.'],
+    ['10','Elite','At the very top of their skillset — a world-class level of performance. Consistently makes the correct decision, performs complex skills with ease, and influences the game positively. Technical ability, tactical awareness, and mental fortitude set them apart.']
+  ]}
+];
+
+function buildRatingScale() {
+  return RATING_BANDS.map(b => `
+    <div class="rating-band">
+      <div class="rating-band-hdr" style="color:${b.color}">${b.range} &middot; ${b.title}</div>
+      ${b.items.map(([n,label,desc]) => `
+        <div class="rating-item">
+          <span class="rating-num" style="background:${b.color}22;color:${b.color};border:1px solid ${b.color}55">${n}</span>
+          <div><div class="rating-label">${label}</div><div class="rating-desc">${desc}</div></div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function openMenu() {
+  if (!currentUser) return;
+  document.getElementById('drawer-av').textContent = currentUser.initials || 'U';
+  document.getElementById('drawer-name').textContent = currentUser.name || '';
+  document.getElementById('drawer-role').textContent = currentUser.role === 'player'
+    ? 'Player · #' + currentUser.number
+    : (currentUser.role === 'admin' ? 'Admin' : 'Coach');
+  const mount = document.getElementById('rating-scale-mount');
+  if (mount && !mount.dataset.built) { mount.innerHTML = buildRatingScale(); mount.dataset.built = '1'; }
+  document.getElementById('menu-drawer').classList.remove('hidden');
+}
+
+function closeMenu() {
+  // Any click that reaches the overlay closes it; the drawer stops its own
+  // clicks from bubbling, so taps inside the drawer stay open.
+  document.getElementById('menu-drawer').classList.add('hidden');
+}
+
 // ── Login success ──────────────────────────────────────────────
 function formatWelcomeName(fullName) {
   if (!fullName) return '';
@@ -1064,10 +1292,20 @@ function showDetail(num, fromSection) {
     if (currentUser.role !== 'player') renderList(fromSection);
   };
   const phdr = `<div class="player-hdr"><div class="p-avatar">${initials(player.name)}</div><div class="p-meta"><h2>${player.name}</h2><p>#${num} · ${player.team}</p></div></div>`;
-  if (currentUser.role === 'player') {
+  if (currentUser.role === 'player' && fromSection === 'evaluation') {
+    // Players get their coach's Evaluation plus their own self-eval / self-feedback, editable.
+    const tabNames = ['Evaluation','RISE UP Self Eval','Self Feedback'];
+    document.getElementById('detail-tabs').innerHTML = tabNames.map((t,i) =>
+      `<div class="tab${i===0?' active':''}" onclick="switchTab(${i})">${t}</div>`
+    ).join('');
+    const contents = [buildEval(evalD), buildSelfEvalPanel(num, true), buildSelfFeedbackPanel(num, true)];
+    document.getElementById('detail-body').innerHTML = phdr + contents.map((c,i) =>
+      `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
+    ).join('');
+  } else if (currentUser.role === 'player') {
     document.getElementById('detail-tabs').innerHTML = '';
-    const map = {benchmarks:buildBench(bench), evaluation:buildEval(evalD), feedback:buildFb(fb,player), values:buildVal(val),
-               behaviors: buildBehaviorSection(fund,'Fundamental Behaviors','No fundamental behaviors data yet.') + buildBehaviorSection(skill,'Skill Behaviors','No skill behaviors data yet.')};
+    const map = {benchmarks:buildBench(bench), feedback:buildFb(fb,player), values:buildVal(val),
+               behaviors: buildBehaviorSection(fund,'Fundamental Behaviors','No fundamental behaviors data yet.','fundamental') + buildBehaviorSection(skill,'Skill Behaviors','No skill behaviors data yet.','skillbeh')};
     document.getElementById('detail-body').innerHTML = phdr + `<div class="tab-content active">${map[fromSection]||''}</div>`;
   } else if (fromSection === 'behaviors') {
     // Behaviors: show only Fundamental + Skill Behaviors tabs
@@ -1076,19 +1314,21 @@ function showDetail(num, fromSection) {
       `<div class="tab${i===0?' active':''}" onclick="switchTab(${i})">${t}</div>`
     ).join('');
     const behContents = [
-      buildBehaviorSection(fund,'Fundamental Behaviors','No fundamental behaviors data yet.'),
-      buildBehaviorSection(skill,'Skill Behaviors','No skill behaviors data yet.')
+      buildBehaviorSection(fund,'Fundamental Behaviors','No fundamental behaviors data yet.','fundamental'),
+      buildBehaviorSection(skill,'Skill Behaviors','No skill behaviors data yet.','skillbeh')
     ];
     document.getElementById('detail-body').innerHTML = phdr + behContents.map((c,i) =>
       `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
     ).join('');
   } else {
-    const tabNames = ['Benchmarks','Evaluation','Feedback','Values'];
+    // Coaches/admins get the existing 4 tabs plus a read-only view of the
+    // player's self-eval / self-feedback.
+    const tabNames = ['Benchmarks','Evaluation','Feedback','Values','RISE UP Self Eval','Self Feedback'];
     const tidx = {benchmarks:0, evaluation:1, feedback:2, values:3}[fromSection] || 0;
     document.getElementById('detail-tabs').innerHTML = tabNames.map((t,i) =>
       `<div class="tab${i===tidx?' active':''}" onclick="switchTab(${i})">${t}</div>`
     ).join('');
-    const contents = [buildBench(bench), buildEval(evalD), buildFb(fb,player), buildVal(val)];
+    const contents = [buildBench(bench), buildEval(evalD), buildFb(fb,player), buildVal(val), buildSelfEvalPanel(num, false), buildSelfFeedbackPanel(num, false)];
     document.getElementById('detail-body').innerHTML = phdr + contents.map((c,i) =>
       `<div class="tab-content${i===tidx?' active':''}" id="tc-${i}">${c}</div>`
     ).join('');
@@ -1134,12 +1374,18 @@ function srow(label, val) {
   return `<div class="mrow"><span class="mname">${label}</span><div class="sbar-wrap"><div class="sbar" style="width:0%;background:${col}" data-w="${pct}"></div></div><span class="mval">${val}<span class="munit">/10</span></span></div>`;
 }
 
-function buildBehaviorSection(data, title, emptyMsg) {
+function buildBehaviorSection(data, title, emptyMsg, category) {
   const keys = Object.keys(data).filter(k => k !== 'num' && k !== 'Average');
-  if (!keys.length) return `<div class="no-data">${emptyMsg}</div>`;
+  let mount = '';
+  if (category) {
+    const mountId = 'hist-' + category + '-' + data.num;
+    setTimeout(() => populateHistory(category, data.num, data, mountId, 'numeric'), 0);
+    mount = `<div id="${mountId}"></div>`;
+  }
+  if (!keys.length) return `<div class="no-data">${emptyMsg}</div>` + mount;
   let h = data.Average != null ? `<div class="avg-badge"><span>Average Score</span><strong>${data.Average.toFixed(2)}/10</strong></div>` : '';
   h += `<div class="mg"><h4>${title}</h4>${keys.map(k=>srow(k,data[k])).join('')}</div>`;
-  return h;
+  return h + mount;
 }
 
 function buildBench(b) {
@@ -1172,7 +1418,9 @@ function buildBench(b) {
     starVals, starLbls:['1m','2m','4m'],
     hasDri, hasFig8, hasStar
   };
-  return chartsHTML + metricsHTML;
+  const mountId = 'hist-benchmarks-' + b.num;
+  setTimeout(() => populateHistory('benchmarks', b.num, b, mountId, 'numeric', 's'), 0);
+  return chartsHTML + metricsHTML + `<div id="${mountId}"></div>`;
 }
 
 function initBenchCharts() {
@@ -1232,9 +1480,13 @@ function buildEval(e) {
 }
 
 function buildFb(fb, player) {
-  if(!fb||(!fb.great&&!fb.improve))return`<div class="no-data">No feedback recorded yet for ${player.name}.</div>`;
+  const num = (fb && fb.num) || player.num;
+  const mountId = 'hist-feedback-' + num;
+  setTimeout(() => populateHistory('feedback', num, fb || {num}, mountId, 'feedback'), 0);
+  const mount = `<div id="${mountId}"></div>`;
+  if(!fb||(!fb.great&&!fb.improve))return`<div class="no-data">No feedback recorded yet for ${player.name}.</div>`+mount;
   return(fb.great?`<div class="fb-card fb-great"><div class="fb-label">One Great Thing</div><div class="fb-text">${fb.great}</div></div>`:'')+
-    (fb.improve?`<div class="fb-card fb-improve"><div class="fb-label">One to Improve</div><div class="fb-text">${fb.improve}</div></div>`:'');
+    (fb.improve?`<div class="fb-card fb-improve"><div class="fb-label">One to Improve</div><div class="fb-text">${fb.improve}</div></div>`:'')+mount;
 }
 
 // Generic behavior sheet processor — reads all numeric columns
@@ -1253,10 +1505,226 @@ function processBehaviorSheet(rows) {
 
 function buildVal(v) {
   const keys=['Respectful','Industrious','Student','Enduring','United','Passionate'];
-  if(!keys.some(k=>v[k]!=null))return'<div class="no-data">No values data recorded yet.</div>';
+  const mountId = 'hist-values-' + v.num;
+  setTimeout(() => populateHistory('values', v.num, v, mountId, 'numeric'), 0);
+  const mount = `<div id="${mountId}"></div>`;
+  if(!keys.some(k=>v[k]!=null))return'<div class="no-data">No values data recorded yet.</div>'+mount;
   let html=v.Average?`<div class="avg-badge"><span>Average Score</span><strong>${v.Average.toFixed(2)}/10</strong></div>`:'';
   html+=`<div class="mg"><h4>Values Scores</h4>${keys.map(k=>srow(k,v[k])).join('')}</div>`;
-  return html;
+  return html+mount;
+}
+
+// ── Self Evaluation & Self Feedback (player-authored, stored in Firestore) ──
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatEntryDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+}
+
+function buildArchiveList(entries, renderEntry) {
+  if (!entries.length) return '';
+  const listId = 'archive-' + Math.random().toString(36).slice(2);
+  return `<div class="archive-wrap">
+    <button type="button" class="archive-toggle" onclick="
+      document.getElementById('${listId}').classList.toggle('open');
+      this.querySelector('.archive-arrow').textContent = document.getElementById('${listId}').classList.contains('open') ? '▲' : '▼';
+    "><span>Past entries (${entries.length})</span><span class="archive-arrow">▼</span></button>
+    <div class="archive-list" id="${listId}">${entries.map(renderEntry).join('')}</div>
+  </div>`;
+}
+
+function renderSelfEvalArchiveEntry(entry) {
+  return `<div class="archive-card">
+    <div class="archive-date">${formatEntryDate(entry.date)}</div>
+    <div class="archive-eval-grid">${SELF_EVAL_KEYS.map(k => `<div class="archive-eval-item"><span class="k">${k}</span><span class="v">${entry[k] ?? '—'}</span></div>`).join('')}</div>
+  </div>`;
+}
+
+function renderSelfFeedbackArchiveEntry(entry) {
+  return `<div class="archive-card">
+    <div class="archive-date">${formatEntryDate(entry.date)}</div>
+    ${entry.doingWell ? `<div class="fb-label" style="color:var(--green);margin-bottom:4px">Going Well</div><div class="fb-text" style="margin-bottom:10px">${escapeHtml(entry.doingWell)}</div>` : ''}
+    ${entry.toImprove ? `<div class="fb-label" style="color:var(--amber);margin-bottom:4px">To Improve</div><div class="fb-text">${escapeHtml(entry.toImprove)}</div>` : ''}
+  </div>`;
+}
+
+// ── Coach-data history archive rendering ─────────────────────────────────
+// Collapse consecutive same-signature snapshots so a rare double-write from
+// two simultaneous viewers never shows as a duplicate past entry.
+function dedupeSnapshots(snaps) {
+  const out = [];
+  for (const s of snaps) {
+    if (!out.length || out[out.length - 1].sig !== s.sig) out.push(s);
+  }
+  return out;
+}
+
+function renderNumericSnapshot(entry, unit) {
+  const vals = entry.values || {};
+  const keys = Object.keys(vals).filter(k => k !== 'num' && k !== 'Average');
+  const u = unit || '';
+  return `<div class="archive-card">
+    <div class="archive-date">${formatEntryDate(entry.date)}</div>
+    <div class="archive-eval-grid">${keys.map(k =>
+      `<div class="archive-eval-item"><span class="k">${k.replace(' m ',' ')}</span><span class="v">${vals[k]}${u}</span></div>`
+    ).join('')}</div>
+  </div>`;
+}
+
+function renderFeedbackSnapshot(entry) {
+  const v = entry.values || {};
+  return `<div class="archive-card">
+    <div class="archive-date">${formatEntryDate(entry.date)}</div>
+    ${v.great ? `<div class="fb-label" style="color:var(--green);margin-bottom:4px">One Great Thing</div><div class="fb-text" style="margin-bottom:10px">${escapeHtml(v.great)}</div>` : ''}
+    ${v.improve ? `<div class="fb-label" style="color:var(--amber);margin-bottom:4px">One to Improve</div><div class="fb-text">${escapeHtml(v.improve)}</div>` : ''}
+  </div>`;
+}
+
+// Runs snapshot-on-view for one category, then renders its Past Entries into
+// the mount div left behind by the builders. `kind` picks the entry renderer.
+async function populateHistory(category, playerNum, currentValues, mountId, kind, unit) {
+  const el = document.getElementById(mountId);
+  if (!el) return; // user navigated away
+  let snaps;
+  try {
+    snaps = await maybeSnapshot(category, playerNum, currentValues);
+  } catch (e) {
+    console.error('history error for', category, e);
+    return; // stay silent — current data already renders above; archive is additive
+  }
+  snaps = dedupeSnapshots(snaps);
+  const archive = snaps.slice(1); // newest == current live data, so drop it
+  if (!archive.length) { el.innerHTML = ''; return; }
+  const renderEntry = kind === 'feedback'
+    ? renderFeedbackSnapshot
+    : (entry) => renderNumericSnapshot(entry, unit);
+  el.innerHTML = buildArchiveList(archive, renderEntry);
+}
+
+function selfEvalSliderRow(key, val) {
+  const v = (val == null) ? 5 : val;
+  return `<div class="self-eval-row">
+    <span class="mname">${key}</span>
+    <input type="range" min="1" max="10" step="1" value="${v}" class="self-eval-slider" data-key="${key}"
+      oninput="this.parentElement.querySelector('.self-eval-readout').textContent=this.value">
+    <span class="self-eval-readout">${v}</span>
+  </div>`;
+}
+
+function buildSelfEvalPanel(playerNum, editable) {
+  const panelId = 'self-eval-panel-' + playerNum;
+  setTimeout(() => populateSelfEval(playerNum, editable, panelId), 0);
+  return `<div id="${panelId}" class="no-data">Loading…</div>`;
+}
+
+async function populateSelfEval(playerNum, editable, panelId) {
+  const el = document.getElementById(panelId);
+  if (!el) return; // user navigated away before this resolved
+  let entries;
+  try {
+    entries = await fetchSelfData('selfEvaluations', playerNum);
+  } catch (e) {
+    console.error(e);
+    el.className = 'no-data';
+    el.textContent = 'Unable to load self-evaluation data. Please check your connection.';
+    return;
+  }
+  const current = entries[0] || {};
+  const archive = entries.slice(1);
+  el.className = '';
+  if (editable) {
+    el.innerHTML = `<div class="mg"><h4>Rate Yourself 1–10</h4>${SELF_EVAL_KEYS.map(k => selfEvalSliderRow(k, current[k])).join('')}</div>
+      <button type="button" class="btn-primary" onclick="submitSelfEval(${playerNum},'${panelId}')">Save My Scores</button>
+      <div class="login-error" id="${panelId}-msg" style="min-height:18px;margin-top:8px"></div>`
+      + buildArchiveList(archive, renderSelfEvalArchiveEntry);
+  } else {
+    el.innerHTML = entries.length
+      ? `<div class="mg"><h4>RISE UP Self Eval</h4>${SELF_EVAL_KEYS.map(k => srow(k, current[k])).join('')}</div>` + buildArchiveList(archive, renderSelfEvalArchiveEntry)
+      : `<div class="no-data">This player hasn't submitted a self-evaluation yet.</div>`;
+    setTimeout(() => animateBars(el), 30);
+  }
+}
+
+async function submitSelfEval(playerNum, panelId) {
+  const el = document.getElementById(panelId);
+  const msg = document.getElementById(panelId + '-msg');
+  const fields = {};
+  el.querySelectorAll('.self-eval-slider').forEach(s => { fields[s.dataset.key] = parseInt(s.value, 10); });
+  msg.style.color = 'var(--text2)';
+  msg.textContent = 'Saving…';
+  try {
+    await saveSelfDoc('selfEvaluations', playerNum, fields);
+    msg.style.color = 'var(--green)';
+    msg.textContent = 'Saved!';
+    await populateSelfEval(playerNum, true, panelId);
+  } catch (e) {
+    console.error(e);
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Could not save. Please check your connection and try again.';
+  }
+}
+
+function buildSelfFeedbackPanel(playerNum, editable) {
+  const panelId = 'self-fb-panel-' + playerNum;
+  setTimeout(() => populateSelfFeedback(playerNum, editable, panelId), 0);
+  return `<div id="${panelId}" class="no-data">Loading…</div>`;
+}
+
+async function populateSelfFeedback(playerNum, editable, panelId) {
+  const el = document.getElementById(panelId);
+  if (!el) return;
+  let entries;
+  try {
+    entries = await fetchSelfData('selfFeedback', playerNum);
+  } catch (e) {
+    console.error(e);
+    el.className = 'no-data';
+    el.textContent = 'Unable to load self-feedback data. Please check your connection.';
+    return;
+  }
+  const current = entries[0] || {};
+  const archive = entries.slice(1);
+  el.className = '';
+  if (editable) {
+    el.innerHTML = `<div class="mg"><h4>What's Going Well</h4>
+        <textarea class="self-fb-textarea" id="${panelId}-well" placeholder="What are you proud of? Where are you finding success in your development?">${escapeHtml(current.doingWell || '')}</textarea>
+      </div>
+      <div class="mg"><h4>What To Improve</h4>
+        <textarea class="self-fb-textarea" id="${panelId}-improve" placeholder="What could you be doing better? What are you working on?">${escapeHtml(current.toImprove || '')}</textarea>
+      </div>
+      <button type="button" class="btn-primary" onclick="submitSelfFeedback(${playerNum},'${panelId}')">Save My Feedback</button>
+      <div class="login-error" id="${panelId}-msg" style="min-height:18px;margin-top:8px"></div>`
+      + buildArchiveList(archive, renderSelfFeedbackArchiveEntry);
+  } else {
+    el.innerHTML = entries.length
+      ? (current.doingWell ? `<div class="fb-card fb-great"><div class="fb-label">Going Well</div><div class="fb-text">${escapeHtml(current.doingWell)}</div></div>` : '')
+        + (current.toImprove ? `<div class="fb-card fb-improve"><div class="fb-label">To Improve</div><div class="fb-text">${escapeHtml(current.toImprove)}</div></div>` : '')
+        + buildArchiveList(archive, renderSelfFeedbackArchiveEntry)
+      : `<div class="no-data">This player hasn't submitted self-feedback yet.</div>`;
+  }
+}
+
+async function submitSelfFeedback(playerNum, panelId) {
+  const el = document.getElementById(panelId);
+  const msg = document.getElementById(panelId + '-msg');
+  const doingWell = document.getElementById(panelId + '-well').value.trim();
+  const toImprove = document.getElementById(panelId + '-improve').value.trim();
+  msg.style.color = 'var(--text2)';
+  msg.textContent = 'Saving…';
+  try {
+    await saveSelfDoc('selfFeedback', playerNum, { doingWell, toImprove });
+    msg.style.color = 'var(--green)';
+    msg.textContent = 'Saved!';
+    await populateSelfFeedback(playerNum, true, panelId);
+  } catch (e) {
+    console.error(e);
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Could not save. Please check your connection and try again.';
+  }
 }
 
 // ── Training Modules ───────────────────────────────────────────
