@@ -76,27 +76,30 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .welcome-bar p{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px}
 .welcome-bar h2{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
 .welcome-bar h2 span{color:var(--accent)}
-.tiles-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:10px;flex:1 1 auto;min-height:0;width:100%}
-.tile{border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;cursor:pointer;border:none;transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s ease,opacity .15s;position:relative;overflow:hidden;width:100%;height:100%;box-shadow:inset 0 1px 0 rgba(255,255,255,0.14)}
-.tile:hover{transform:scale(.97);box-shadow:0 8px 32px rgba(0,0,0,.35)}
-.tile:active{transform:scale(.93);box-shadow:0 2px 12px rgba(0,0,0,.3)}
-.tile-label{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#fff;position:relative;z-index:2;text-align:center;text-shadow:0 1px 8px rgba(0,0,0,.35)}
-.tile-wide{grid-column:span 2;flex-direction:row;gap:14px;align-items:center;justify-content:center}
-.tile-wide .tile-label{font-size:17px}
-.tile-wide .tile-icon-wrap{margin-bottom:0;margin-right:4px}
-.t-blue{background:linear-gradient(145deg,#3A5580 0%,#24354F 52%,#111B2E 100%)}
-.t-purple{background:linear-gradient(145deg,#B08A2E 0%,#8C6A22 52%,#5C4614 100%)}
-.t-green{background:linear-gradient(145deg,#2F6B52 0%,#21503D 52%,#113023 100%)}
-.t-amber{background:linear-gradient(145deg,#7A3B44 0%,#5C2C33 52%,#391B20 100%)}
-.t-red{background:linear-gradient(145deg,#35707A 0%,#24545C 52%,#12333A 100%)}.t-teal{background:linear-gradient(145deg,#6E6338 0%,#534A29 52%,#322D18 100%)}
-.tile{border-radius:22px !important}
-.tile-label{opacity:.97}
-.tile-arc{position:absolute;inset:0;overflow:hidden;border-radius:22px;pointer-events:none}
-.tile-arc-svg{position:absolute;will-change:transform}
-.tile-icon-wrap{position:relative;z-index:2;margin-bottom:14px;opacity:0.9}
-.tile-icon-wrap svg{width:54px;height:54px}
-.home-quote-wrap{container-type:inline-size;margin-top:4px;padding:14px 6px 4px;text-align:center;border-top:1px solid var(--border)}
+.tiles-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:13px;flex:1 1 auto;min-height:0;width:100%}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 10px;border-radius:18px;cursor:pointer;overflow:hidden;
+  background:linear-gradient(158deg, var(--base1) 0%, var(--base2) 100%);
+  border:1px solid var(--edge);
+  box-shadow:0 8px 16px -5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s ease,border-color .18s ease}
+.tile::before{content:'';position:absolute;inset:0;background:radial-gradient(85% 55% at 50% 10%, var(--glow) 0%, transparent 64%);pointer-events:none}
+.tile:hover{transform:translateY(-4px);box-shadow:0 14px 26px -6px rgba(0,0,0,.5), 0 0 22px var(--glow);border-color:var(--ac)}
+.tile:active{transform:translateY(-1px) scale(.99)}
+.tile-badge{position:relative;z-index:2;width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--ac);background:var(--badge-bg);box-shadow:0 0 28px var(--glow), inset 0 0 16px var(--glow)}
+.tile-badge svg{width:31px;height:31px}
+.tile-badge img{width:30px;height:30px;object-fit:contain}
+.tile-title{position:relative;z-index:2;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#fff;text-align:center;line-height:1.05;text-shadow:0 2px 10px rgba(0,0,0,.45)}
+.tile-sub{position:relative;z-index:2;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ac);text-shadow:0 0 14px var(--glow)}
+.tile-rule{position:relative;z-index:2;width:56%;max-width:150px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--ac) 18%,var(--ac) 82%,transparent);box-shadow:0 0 9px var(--glow)}
+.tile-eval{--ac:#5B93F5;--glow:rgba(70,125,245,.38);--edge:rgba(91,147,245,.5);--badge-bg:rgba(40,80,180,.35);--base1:#2C5AA8;--base2:#14284D}
+.tile-bench{--ac:#3FD08E;--glow:rgba(40,200,120,.34);--edge:rgba(63,208,142,.5);--badge-bg:rgba(20,110,70,.35);--base1:#1B7A4E;--base2:#0B3524}
+.tile-train{--ac:#B08CFF;--glow:rgba(150,95,250,.38);--edge:rgba(176,140,255,.5);--badge-bg:rgba(80,45,160,.35);--base1:#6A2FA8;--base2:#2C1152}
+.tile-identity{--ac:#E7B93E;--glow:rgba(220,175,55,.36);--edge:rgba(210,170,60,.55);--badge-bg:rgba(120,90,25,.4);--base1:#B08A22;--base2:#5A4310}
+.home-quote-wrap{container-type:inline-size;margin-top:6px;padding:12px 6px 6px;text-align:center}
 .home-quote{display:inline-block;max-width:100%;font-family:'Barlow',sans-serif;font-style:italic;line-height:1.4;letter-spacing:0.3px;color:var(--text2);white-space:nowrap;font-size:clamp(9px,2.6cqw,13px)}
+.home-quote .q-mark{color:var(--forge-gold);font-style:normal;font-family:Georgia,'Times New Roman',serif;font-size:1.5em;font-weight:700;vertical-align:-0.28em;opacity:.95;margin:0 3px}
+.quote-glow-line{position:relative;height:2px;margin:11px auto 2px;max-width:78%;background:linear-gradient(90deg,transparent 0%,rgba(201,162,39,.95) 50%,transparent 100%)}
+.quote-glow-line::after{content:'';position:absolute;left:0;right:0;top:-3px;height:8px;background:radial-gradient(ellipse 55% 100% at 50% 50%, rgba(201,162,39,.6) 0%, transparent 72%);filter:blur(2px)}
 
 /* LIST SCREENS */
 .search-bar{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
@@ -367,40 +370,34 @@ firebase.auth().onAuthStateChanged(user => {
       <h2 id="welcome-name"><span>Coach</span></h2>
     </div>
     <div class="tiles-grid">
-      <button type="button" class="tile t-blue" onclick="nav('benchmarks')">
-        <div class="tile-arc"><svg class="tile-arc-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.18;animation:kfDots 20s ease-in-out 0s infinite"><circle cx="28"  cy="34"  r="2"   fill="white"/><circle cx="72"  cy="18"  r="1.5" fill="white"/><circle cx="140" cy="28"  r="2.5" fill="white"/><circle cx="180" cy="55"  r="1.5" fill="white"/><circle cx="55"  cy="80"  r="1"   fill="white"/><circle cx="110" cy="65"  r="2"   fill="white"/><circle cx="165" cy="90"  r="1.5" fill="white"/><circle cx="20"  cy="115" r="2"   fill="white"/><circle cx="85"  cy="130" r="1.5" fill="white"/><circle cx="145" cy="118" r="2.5" fill="white"/><circle cx="185" cy="145" r="1"   fill="white"/><circle cx="40"  cy="165" r="2"   fill="white"/><circle cx="100" cy="178" r="1.5" fill="white"/><circle cx="160" cy="170" r="2"   fill="white"/><circle cx="190" cy="185" r="1"   fill="white"/><circle cx="60"  cy="48"  r="1"   fill="white"/><circle cx="128" cy="150" r="1.5" fill="white"/><circle cx="12"  cy="190" r="1.5" fill="white"/><circle cx="175" cy="20"  r="1"   fill="white"/><circle cx="90"  cy="100" r="1"   fill="white"/></svg></div>
-        <div class="tile-icon-wrap"><svg viewBox="0 0 32 32" fill="none"><rect x="2" y="18" width="6" height="12" rx="1.5" fill="white"/><rect x="13" y="11" width="6" height="19" rx="1.5" fill="white"/><rect x="24" y="5" width="6" height="25" rx="1.5" fill="white"/></svg></div>
-        <span class="tile-label">Benchmarks</span>
+      <button type="button" class="tile tile-eval" onclick="nav('evaluation')">
+        <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="7" y="5" width="18" height="24" rx="3" stroke="white" stroke-width="2"/><rect x="11" y="3" width="10" height="5" rx="1.5" fill="white"/><path d="M11 17.5l3.4 3.4L22 13.2" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="tile-title">Evaluation</span>
+        <span class="tile-sub">(Subjective)</span>
+        <span class="tile-rule"></span>
       </button>
-      <button type="button" class="tile t-purple" onclick="nav('evaluation')">
-        <div class="tile-arc"><svg class="tile-arc-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.18;animation:kfDots 17s ease-in-out -5s infinite"><circle cx="28"  cy="34"  r="2"   fill="white"/><circle cx="72"  cy="18"  r="1.5" fill="white"/><circle cx="140" cy="28"  r="2.5" fill="white"/><circle cx="180" cy="55"  r="1.5" fill="white"/><circle cx="55"  cy="80"  r="1"   fill="white"/><circle cx="110" cy="65"  r="2"   fill="white"/><circle cx="165" cy="90"  r="1.5" fill="white"/><circle cx="20"  cy="115" r="2"   fill="white"/><circle cx="85"  cy="130" r="1.5" fill="white"/><circle cx="145" cy="118" r="2.5" fill="white"/><circle cx="185" cy="145" r="1"   fill="white"/><circle cx="40"  cy="165" r="2"   fill="white"/><circle cx="100" cy="178" r="1.5" fill="white"/><circle cx="160" cy="170" r="2"   fill="white"/><circle cx="190" cy="185" r="1"   fill="white"/><circle cx="60"  cy="48"  r="1"   fill="white"/><circle cx="128" cy="150" r="1.5" fill="white"/><circle cx="12"  cy="190" r="1.5" fill="white"/><circle cx="175" cy="20"  r="1"   fill="white"/><circle cx="90"  cy="100" r="1"   fill="white"/></svg></div>
-        <div class="tile-icon-wrap"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12" stroke="white" stroke-width="2"/><path d="M10 16l4 4 8-8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <span class="tile-label">Evaluation</span>
+      <button type="button" class="tile tile-bench" onclick="nav('benchmarks')">
+        <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="4" y="17" width="6" height="11" rx="1.5" fill="white"/><rect x="13" y="10" width="6" height="18" rx="1.5" fill="white"/><rect x="22" y="4" width="6" height="24" rx="1.5" fill="white"/></svg></span>
+        <span class="tile-title">Benchmarks</span>
+        <span class="tile-sub">(Objective)</span>
+        <span class="tile-rule"></span>
       </button>
-      <button type="button" class="tile t-green" onclick="nav('feedback')">
-        <div class="tile-arc"><svg class="tile-arc-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.18;animation:kfDots 23s ease-in-out -9s infinite"><circle cx="28"  cy="34"  r="2"   fill="white"/><circle cx="72"  cy="18"  r="1.5" fill="white"/><circle cx="140" cy="28"  r="2.5" fill="white"/><circle cx="180" cy="55"  r="1.5" fill="white"/><circle cx="55"  cy="80"  r="1"   fill="white"/><circle cx="110" cy="65"  r="2"   fill="white"/><circle cx="165" cy="90"  r="1.5" fill="white"/><circle cx="20"  cy="115" r="2"   fill="white"/><circle cx="85"  cy="130" r="1.5" fill="white"/><circle cx="145" cy="118" r="2.5" fill="white"/><circle cx="185" cy="145" r="1"   fill="white"/><circle cx="40"  cy="165" r="2"   fill="white"/><circle cx="100" cy="178" r="1.5" fill="white"/><circle cx="160" cy="170" r="2"   fill="white"/><circle cx="190" cy="185" r="1"   fill="white"/><circle cx="60"  cy="48"  r="1"   fill="white"/><circle cx="128" cy="150" r="1.5" fill="white"/><circle cx="12"  cy="190" r="1.5" fill="white"/><circle cx="175" cy="20"  r="1"   fill="white"/><circle cx="90"  cy="100" r="1"   fill="white"/></svg></div>
-        <div class="tile-icon-wrap"><svg viewBox="0 0 32 32" fill="none"><rect x="4" y="5" width="24" height="17" rx="3" stroke="white" stroke-width="2"/><path d="M9 12h14M9 17h8" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M10 22l6 5 6-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <span class="tile-label">Feedback</span>
+      <button type="button" class="tile tile-train" onclick="nav('videos')">
+        <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="17" rx="3" stroke="white" stroke-width="2"/><path d="M13.5 11l6.5 3.5-6.5 3.5V11z" fill="white"/><path d="M11 27h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <span class="tile-title">Training Modules</span>
+        <span class="tile-sub">(Videos)</span>
+        <span class="tile-rule"></span>
       </button>
-      <button type="button" class="tile t-amber" onclick="nav('values')">
-        <div class="tile-arc"><svg class="tile-arc-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.18;animation:kfDots 19s ease-in-out -3s infinite"><circle cx="28"  cy="34"  r="2"   fill="white"/><circle cx="72"  cy="18"  r="1.5" fill="white"/><circle cx="140" cy="28"  r="2.5" fill="white"/><circle cx="180" cy="55"  r="1.5" fill="white"/><circle cx="55"  cy="80"  r="1"   fill="white"/><circle cx="110" cy="65"  r="2"   fill="white"/><circle cx="165" cy="90"  r="1.5" fill="white"/><circle cx="20"  cy="115" r="2"   fill="white"/><circle cx="85"  cy="130" r="1.5" fill="white"/><circle cx="145" cy="118" r="2.5" fill="white"/><circle cx="185" cy="145" r="1"   fill="white"/><circle cx="40"  cy="165" r="2"   fill="white"/><circle cx="100" cy="178" r="1.5" fill="white"/><circle cx="160" cy="170" r="2"   fill="white"/><circle cx="190" cy="185" r="1"   fill="white"/><circle cx="60"  cy="48"  r="1"   fill="white"/><circle cx="128" cy="150" r="1.5" fill="white"/><circle cx="12"  cy="190" r="1.5" fill="white"/><circle cx="175" cy="20"  r="1"   fill="white"/><circle cx="90"  cy="100" r="1"   fill="white"/></svg></div>
-        <div class="tile-icon-wrap"><svg viewBox="0 0 32 32" fill="none"><path d="M16 4l3 7 7.5 1-5.5 5.5 1.5 7.5L16 21l-6.5 4 1.5-7.5L5.5 12l7.5-1z" stroke="white" stroke-width="2" stroke-linejoin="round"/></svg></div>
-        <span class="tile-label">Values</span>
-      </button>
-      <button type="button" class="tile t-red" onclick="nav('videos')">
-        <div class="tile-arc"><svg class="tile-arc-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.18;animation:kfDots 25s ease-in-out -13s infinite"><circle cx="28"  cy="34"  r="2"   fill="white"/><circle cx="72"  cy="18"  r="1.5" fill="white"/><circle cx="140" cy="28"  r="2.5" fill="white"/><circle cx="180" cy="55"  r="1.5" fill="white"/><circle cx="55"  cy="80"  r="1"   fill="white"/><circle cx="110" cy="65"  r="2"   fill="white"/><circle cx="165" cy="90"  r="1.5" fill="white"/><circle cx="20"  cy="115" r="2"   fill="white"/><circle cx="85"  cy="130" r="1.5" fill="white"/><circle cx="145" cy="118" r="2.5" fill="white"/><circle cx="185" cy="145" r="1"   fill="white"/><circle cx="40"  cy="165" r="2"   fill="white"/><circle cx="100" cy="178" r="1.5" fill="white"/><circle cx="160" cy="170" r="2"   fill="white"/><circle cx="190" cy="185" r="1"   fill="white"/><circle cx="60"  cy="48"  r="1"   fill="white"/><circle cx="128" cy="150" r="1.5" fill="white"/><circle cx="12"  cy="190" r="1.5" fill="white"/><circle cx="175" cy="20"  r="1"   fill="white"/><circle cx="90"  cy="100" r="1"   fill="white"/></svg></div>
-        <div class="tile-icon-wrap"><svg viewBox="0 0 32 32" fill="none"><rect x="2" y="6" width="20" height="20" rx="3" stroke="white" stroke-width="2"/><path d="M22 11l8-4v14l-8-4V11z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 11l6 5-6 5V11z" fill="white"/></svg></div>
-        <span class="tile-label">Training Modules</span>
-      </button>
-
-      <button type="button" class="tile t-teal" onclick="nav('behaviors')">
-        <div class="tile-arc"><svg class="tile-arc-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.18;animation:kfDots 22s ease-in-out -7s infinite"><circle cx="28"  cy="34"  r="2"   fill="white"/><circle cx="72"  cy="18"  r="1.5" fill="white"/><circle cx="140" cy="28"  r="2.5" fill="white"/><circle cx="180" cy="55"  r="1.5" fill="white"/><circle cx="55"  cy="80"  r="1"   fill="white"/><circle cx="110" cy="65"  r="2"   fill="white"/><circle cx="165" cy="90"  r="1.5" fill="white"/><circle cx="20"  cy="115" r="2"   fill="white"/><circle cx="85"  cy="130" r="1.5" fill="white"/><circle cx="145" cy="118" r="2.5" fill="white"/><circle cx="185" cy="145" r="1"   fill="white"/><circle cx="40"  cy="165" r="2"   fill="white"/><circle cx="100" cy="178" r="1.5" fill="white"/><circle cx="160" cy="170" r="2"   fill="white"/><circle cx="190" cy="185" r="1"   fill="white"/><circle cx="60"  cy="48"  r="1"   fill="white"/><circle cx="128" cy="150" r="1.5" fill="white"/><circle cx="12"  cy="190" r="1.5" fill="white"/><circle cx="175" cy="20"  r="1"   fill="white"/><circle cx="90"  cy="100" r="1"   fill="white"/></svg></div>
-        <div class="tile-icon-wrap"><svg viewBox="0 0 32 32" fill="none"><path d="M6 9h20M6 16h14M6 23h10" stroke="white" stroke-width="2.2" stroke-linecap="round"/><circle cx="26" cy="22" r="4" stroke="white" stroke-width="2"/><path d="M24 22l1.5 1.5L28 20" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <span class="tile-label">Forge Behaviors</span>
+      <button type="button" class="tile tile-identity" onclick="nav('identity')">
+        <span class="tile-badge"><img src="icons/forge-logo-gold.png" alt="" style="filter:brightness(0) invert(1)"></span>
+        <span class="tile-title">Forge Identity</span>
+        <span class="tile-sub">(DNA)</span>
+        <span class="tile-rule"></span>
       </button>
     </div>
     <div class="home-quote-wrap">
-      <p class="home-quote">"Excellence is the sum of the millions of small, honest actions"</p>
+      <p class="home-quote"><span class="q-mark">&ldquo;</span>Excellence is the sum of the millions of small, honest actions<span class="q-mark">&rdquo;</span></p>
+      <div class="quote-glow-line"></div>
     </div>
   </div>
 </div>
@@ -474,6 +471,18 @@ firebase.auth().onAuthStateChanged(user => {
   <div class="search-bar"><div class="search-wrap"><input type="text" id="s-beh" placeholder="Search name or number..." oninput="renderList('behaviors')"/></div></div>
   <div class="filter-bar" id="f-beh"></div>
   <div class="list-body" id="l-beh"></div>
+</div>
+
+<!-- FORGE IDENTITY (groups Feedback, Values, Forge Behaviors) -->
+<div id="identity" class="screen">
+  <div class="header">
+    <button type="button" class="back-btn" onclick="nav('home')">&#8592;</button>
+    <div class="header-title">Forge Identity</div>
+    <div class="hdr-right"></div>
+  </div>
+  <div class="search-bar"><div class="search-wrap"><input type="text" id="s-ident" placeholder="Search name or number..." oninput="renderList('identity')"/></div></div>
+  <div class="filter-bar" id="f-ident"></div>
+  <div class="list-body" id="l-ident"></div>
 </div>
 
 <!-- PLAYER DETAIL -->
@@ -593,12 +602,29 @@ function processBenchmarks(rows) {
   });
 }
 
+// Evaluation metrics, grouped into the four categories shown as tabs.
+// These key strings must match the column headers on the "Evaluation (Matrix)"
+// sheet exactly — any column not present there simply renders as "—".
+const EVAL_GROUPS = {
+  'Mindset':   ['Team Approach','Social Skills','Level of Engagement (on and off ball)','Mentality','Effort/Work Ethic','Intensity','Competitiveness','Energy (high & positive)','Level of Correction (with feedback)'],
+  'Technique': ['Controlled Pass','Oriented Control','Dribble','Carry','Shooting','Ball Protection','Ball Conducting'],
+  'Tactical':  ['Body Orientation','Scanning','Space','Time','Deception','Teammates','Opponents','Support','Decision Making','Transition'],
+  'Physical':  ['Acceleration','Maximum Speed','Deceleration','Change of Direction','Agility','Balance','Coordination','Reaction Speed','Endurance','Strength']
+};
+const EVAL_KEYS = Object.keys(EVAL_GROUPS).reduce((all, g) => all.concat(EVAL_GROUPS[g]), []);
+// Display-name overrides where the sheet's column header is more verbose than
+// we want to show (keys on the left must match the sheet headers exactly).
+const EVAL_LABELS = {
+  'Level of Engagement (on and off ball)': 'Level of Engagement',
+  'Strength': 'Strength (Body Control)'
+};
+function evalLabel(key) { return EVAL_LABELS[key] || key; }
+
 function processEvaluation(rows) {
-  const keys = ['Team Approach','Social Skills','Level of Engagement (on and off ball)','Mentality','Effort/Work Ethic','Intensity','Competitiveness','Energy (high & positive)','Level of Correction (with feedback)','Space','Time','Feinting','Opponents','Physicality Under Pressure','Group Attacking','Group Defending','Attacking Transition','Defending Transition'];
   return rows.filter(r => r['Player Number']).map(r => {
     const o = {num: parseInt(r['Player Number'])};
-    keys.forEach(k => { if (r[k] != null && !isNaN(r[k])) o[k] = parseFloat(r[k]); });
-    const vals = keys.map(k => o[k]).filter(v => v != null);
+    EVAL_KEYS.forEach(k => { if (r[k] != null && r[k] !== '' && !isNaN(r[k])) o[k] = parseFloat(r[k]); });
+    const vals = EVAL_KEYS.map(k => o[k]).filter(v => v != null);
     if (vals.length) o.Average = parseFloat((vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(2));
     return o;
   });
@@ -840,7 +866,7 @@ function show(id) {
 }
 
 function nav(id) {
-  const sections = ['benchmarks','evaluation','feedback','values','behaviors'];
+  const sections = ['benchmarks','evaluation','feedback','values','behaviors','identity'];
   const isPlayer = currentUser && currentUser.role === 'player';
   if (isPlayer && sections.includes(id)) {
     showDetail(currentUser.number, id);
@@ -1255,7 +1281,7 @@ function getPlayers() {
 function byNum(arr, num) { return arr.find(r => r.num === num) || {num}; }
 
 function renderList(section) {
-  const sid = {benchmarks:'bench', evaluation:'eval', feedback:'fb', values:'val', behaviors:'beh'}[section];
+  const sid = {benchmarks:'bench', evaluation:'eval', feedback:'fb', values:'val', behaviors:'beh', identity:'ident'}[section];
   const q = document.getElementById('s-' + sid).value.toLowerCase();
   let players = getPlayers();
   if (teamFilter !== 'All') players = players.filter(p => p.team === teamFilter);
@@ -1284,7 +1310,7 @@ function showDetail(num, fromSection) {
   const val    = byNum(DB.values, num);
   const fund   = byNum(DB.fundamental, num);
   const skill  = byNum(DB.skillbeh, num);
-  const titles = {benchmarks:'Benchmarks', evaluation:'Evaluation', feedback:'Feedback', values:'Values', behaviors:'Forge Behaviors'};
+  const titles = {benchmarks:'Benchmarks', evaluation:'Evaluation', feedback:'Feedback', values:'Values', behaviors:'Forge Behaviors', identity:'Forge Identity'};
   document.getElementById('detail-hdr').textContent = titles[fromSection] || '#'+num;
   const backDest = currentUser.role === 'player' ? 'home' : fromSection;
   document.getElementById('detail-back').onclick = () => {
@@ -1292,13 +1318,32 @@ function showDetail(num, fromSection) {
     if (currentUser.role !== 'player') renderList(fromSection);
   };
   const phdr = `<div class="player-hdr"><div class="p-avatar">${initials(player.name)}</div><div class="p-meta"><h2>${player.name}</h2><p>#${num} · ${player.team}</p></div></div>`;
-  if (currentUser.role === 'player' && fromSection === 'evaluation') {
-    // Players get their coach's Evaluation plus their own self-eval / self-feedback, editable.
-    const tabNames = ['Evaluation','RISE UP Self Eval','Self Feedback'];
+  if (fromSection === 'identity') {
+    // Forge Identity groups the player's coach-authored Feedback, Values, and
+    // Forge Behaviors into one place — same tabs for players and coaches.
+    const isPlayer = currentUser.role === 'player';
+    const tabNames = ['Feedback','Self Feedback','Values','Behaviors'];
     document.getElementById('detail-tabs').innerHTML = tabNames.map((t,i) =>
       `<div class="tab${i===0?' active':''}" onclick="switchTab(${i})">${t}</div>`
     ).join('');
-    const contents = [buildEval(evalD), buildSelfEvalPanel(num, true), buildSelfFeedbackPanel(num, true)];
+    const behaviorsContent =
+      buildBehaviorSection(fund,'Fundamental Behaviors','No fundamental behaviors data yet.','fundamental') +
+      buildBehaviorSection(skill,'Skill Behaviors','No skill behaviors data yet.','skillbeh');
+    const contents = [buildFb(fb,player), buildSelfFeedbackPanel(num, isPlayer), buildVal(val), behaviorsContent];
+    document.getElementById('detail-body').innerHTML = phdr + contents.map((c,i) =>
+      `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
+    ).join('');
+  } else if (fromSection === 'evaluation') {
+    // Evaluation splits into its four categories, plus the player's own
+    // self-eval / self-feedback (editable for players, read-only for staff).
+    const isPlayer = currentUser.role === 'player';
+    const groups = Object.keys(EVAL_GROUPS);
+    const tabNames = groups.concat(['RISE UP Self Eval']);
+    document.getElementById('detail-tabs').innerHTML = tabNames.map((t,i) =>
+      `<div class="tab${i===0?' active':''}" onclick="switchTab(${i})">${t}</div>`
+    ).join('');
+    const contents = groups.map(g => buildEvalGroup(evalD, g))
+      .concat([buildSelfEvalPanel(num, isPlayer)]);
     document.getElementById('detail-body').innerHTML = phdr + contents.map((c,i) =>
       `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
     ).join('');
@@ -1469,13 +1514,24 @@ function initBenchCharts() {
   }
 }
 
+// One evaluation category (Mindset / Technique / Tactical / Physical) — used
+// for the per-category tabs in the Evaluation view.
+function buildEvalGroup(e, groupName) {
+  const keys = EVAL_GROUPS[groupName] || [];
+  const scored = keys.filter(k => e[k] != null);
+  if (!scored.length) return `<div class="no-data">No ${groupName.toLowerCase()} scores recorded yet.</div>`;
+  const avg = (scored.reduce((sum,k) => sum + e[k], 0) / scored.length).toFixed(2);
+  return `<div class="avg-badge"><span>${groupName} Average</span><strong>${avg}/10</strong></div>` +
+    `<div class="mg"><h4>${groupName}</h4>${keys.map(k => srow(evalLabel(k), e[k])).join('')}</div>`;
+}
+
+// All categories stacked — used where Evaluation appears as a single tab.
 function buildEval(e) {
-  const allKeys=['Team Approach','Social Skills','Level of Engagement (on and off ball)','Mentality','Effort/Work Ethic','Intensity','Competitiveness','Energy (high & positive)','Level of Correction (with feedback)','Body Orientation','Space','Time','Feinting','Opponents','Physicality Under Pressure','Group Attacking','Group Defending','Attacking Transition','Defending Transition'];
-  if(!allKeys.some(k=>e[k]!=null))return'<div class="no-data">No evaluation data recorded yet.</div>';
-  let html=e.Average?`<div class="avg-badge"><span>Average Score</span><strong>${e.Average}/10</strong></div>`:'';
-  html+=`<div class="mg"><h4>Mindset</h4>${['Team Approach','Social Skills','Level of Engagement (on and off ball)','Mentality','Effort/Work Ethic','Intensity','Competitiveness','Energy (high & positive)','Level of Correction (with feedback)'].map(k=>srow(k,e[k])).join('')}</div>`;
-  html+=`<div class="mg"><h4>Technical</h4>${['Space','Time','Feinting'].map(k=>srow(k,e[k])).join('')}</div>`;
-  html+=`<div class="mg"><h4>Tactical</h4>${['Opponents','Physicality Under Pressure','Group Attacking','Group Defending','Attacking Transition','Defending Transition'].map(k=>srow(k,e[k])).join('')}</div>`;
+  if (!EVAL_KEYS.some(k => e[k] != null)) return '<div class="no-data">No evaluation data recorded yet.</div>';
+  let html = e.Average ? `<div class="avg-badge"><span>Average Score</span><strong>${e.Average}/10</strong></div>` : '';
+  html += Object.keys(EVAL_GROUPS).map(g =>
+    `<div class="mg"><h4>${g}</h4>${EVAL_GROUPS[g].map(k => srow(evalLabel(k), e[k])).join('')}</div>`
+  ).join('');
   return html;
 }
 
