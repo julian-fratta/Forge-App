@@ -69,6 +69,8 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .avatar.tappable:hover{transform:scale(1.06);box-shadow:0 0 0 3px rgba(201,162,39,.25)}
 .avatar.tappable::after{content:'';position:absolute;inset:-6px;border-radius:50%}
 .coach-badge{background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:4px;text-transform:uppercase}
+.rs-btn{width:34px;height:34px;border-radius:50%;background:transparent;border:1.5px solid var(--accent);color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,color .15s}
+.rs-btn:hover{background:var(--accent);color:var(--on-accent)}
 
 /* HOME */
 .home-body{padding:12px;flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;min-height:0}
@@ -490,7 +492,7 @@ firebase.auth().onAuthStateChanged(user => {
   <div class="header">
     <button type="button" class="back-btn" id="detail-back">&#8592;</button>
     <div class="header-title" id="detail-hdr">Player</div>
-    <div class="hdr-right"></div>
+    <div class="hdr-right" id="detail-hdr-right"></div>
   </div>
   <div class="tab-bar" id="detail-tabs"></div>
   <div class="detail-body" id="detail-body"></div>
@@ -541,11 +543,22 @@ firebase.auth().onAuthStateChanged(user => {
         <button type="button" class="drawer-close" onclick="closeMenu()" aria-label="Close menu">&times;</button>
       </div>
       <button type="button" class="drawer-logout" onclick="closeMenu();doLogout()">Log Out</button>
-      <div class="drawer-section">
-        <h4>Rating Scale</h4>
-        <p class="drawer-hint">What each 1&ndash;10 score means when a coach or player rates a skill or attribute.</p>
-        <div id="rating-scale-mount"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RATING SCALE DRAWER (opened from the "RS" button on Evaluation / Forge Identity) -->
+<div class="drawer-overlay hidden" id="rs-drawer" onclick="closeRatingScale()">
+  <div class="drawer-shell">
+    <div class="drawer" onclick="event.stopPropagation()">
+      <div class="drawer-head">
+        <div class="drawer-section" style="min-width:0">
+          <h4>Rating Scale</h4>
+          <p class="drawer-hint" style="margin-bottom:0">What each 1&ndash;10 score means when rating a skill or attribute.</p>
+        </div>
+        <button type="button" class="drawer-close" onclick="closeRatingScale()" aria-label="Close rating scale">&times;</button>
       </div>
+      <div id="rating-scale-mount"></div>
     </div>
   </div>
 </div>
@@ -1228,8 +1241,6 @@ function openMenu() {
   document.getElementById('drawer-role').textContent = currentUser.role === 'player'
     ? 'Player · #' + currentUser.number
     : (currentUser.role === 'admin' ? 'Admin' : 'Coach');
-  const mount = document.getElementById('rating-scale-mount');
-  if (mount && !mount.dataset.built) { mount.innerHTML = buildRatingScale(); mount.dataset.built = '1'; }
   document.getElementById('menu-drawer').classList.remove('hidden');
 }
 
@@ -1237,6 +1248,16 @@ function closeMenu() {
   // Any click that reaches the overlay closes it; the drawer stops its own
   // clicks from bubbling, so taps inside the drawer stay open.
   document.getElementById('menu-drawer').classList.add('hidden');
+}
+
+// Rating scale — opened via the "RS" button on Evaluation / Forge Identity.
+function openRatingScale() {
+  const mount = document.getElementById('rating-scale-mount');
+  if (mount && !mount.dataset.built) { mount.innerHTML = buildRatingScale(); mount.dataset.built = '1'; }
+  document.getElementById('rs-drawer').classList.remove('hidden');
+}
+function closeRatingScale() {
+  document.getElementById('rs-drawer').classList.add('hidden');
 }
 
 // ── Login success ──────────────────────────────────────────────
@@ -1312,6 +1333,11 @@ function showDetail(num, fromSection) {
   const skill  = byNum(DB.skillbeh, num);
   const titles = {benchmarks:'Benchmarks', evaluation:'Evaluation', feedback:'Feedback', values:'Values', behaviors:'Forge Behaviors', identity:'Forge Identity'};
   document.getElementById('detail-hdr').textContent = titles[fromSection] || '#'+num;
+  // "RS" rating-scale shortcut appears only on Evaluation and Forge Identity.
+  document.getElementById('detail-hdr-right').innerHTML =
+    (fromSection === 'evaluation' || fromSection === 'identity')
+      ? '<button type="button" class="rs-btn" onclick="openRatingScale()" title="Rating scale" aria-label="Rating scale">RS</button>'
+      : '';
   const backDest = currentUser.role === 'player' ? 'home' : fromSection;
   document.getElementById('detail-back').onclick = () => {
     show(backDest);
