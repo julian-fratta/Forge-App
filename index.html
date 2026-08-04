@@ -74,28 +74,31 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 
 /* HOME */
 .home-body{padding:12px;flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;min-height:0}
-.welcome-bar{background:rgba(255,255,255,0.06);border-radius:10px;padding:7px 13px;margin-bottom:8px;border:1px solid var(--border)}
-.welcome-bar p{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px}
-.welcome-bar h2{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
-.welcome-bar h2 span{color:var(--accent)}
-.tiles-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:13px;flex:1 1 auto;min-height:0;width:100%}
-.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 10px;border-radius:18px;cursor:pointer;overflow:hidden;
-  background:linear-gradient(158deg, var(--base1) 0%, var(--base2) 100%);
-  border:1px solid var(--edge);
-  box-shadow:0 8px 16px -5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+.tiles-grid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:1 1 auto;min-height:0;width:100%}
+.tiles-row{display:flex;justify-content:center;gap:16px;width:100%}
+.tiles-row:last-child{margin-top:-6px}
+.tile{position:relative;flex:0 0 49%;aspect-ratio:1;max-width:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:50%;cursor:pointer;overflow:hidden;
+  background:radial-gradient(115% 100% at 50% 6%, var(--base1) 0%, var(--base2) 68%);
+  border:1.5px solid var(--edge);
+  box-shadow:0 10px 26px -6px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04) inset, inset 0 2px 0 rgba(255,255,255,.10);
+  animation:tilePulse 3.4s ease-in-out infinite;
   transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s ease,border-color .18s ease}
-.tile::before{content:'';position:absolute;inset:0;background:radial-gradient(85% 55% at 50% 10%, var(--glow) 0%, transparent 64%);pointer-events:none}
-.tile:hover{transform:translateY(-4px);box-shadow:0 14px 26px -6px rgba(0,0,0,.5), 0 0 22px var(--glow);border-color:var(--ac)}
-.tile:active{transform:translateY(-1px) scale(.99)}
-.tile-badge{position:relative;z-index:2;width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--ac);background:var(--badge-bg);box-shadow:0 0 28px var(--glow), inset 0 0 16px var(--glow)}
+.tile-eval{animation-delay:0s}
+.tile-bench{animation-delay:.7s}
+.tile-train{animation-delay:1.4s}
+@keyframes tilePulse{0%,100%{transform:scale(1);box-shadow:0 10px 26px -6px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.10), 0 0 10px -2px var(--glow)}50%{transform:scale(1.04);box-shadow:0 12px 30px -6px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.10), 0 0 30px 2px var(--glow)}}
+.tile::before{content:'';position:absolute;inset:0;background:radial-gradient(70% 58% at 50% 14%, var(--glow) 0%, transparent 62%);pointer-events:none}
+.tile:hover{animation-play-state:paused;transform:scale(1.06);box-shadow:0 16px 34px -6px rgba(0,0,0,.6), 0 0 34px 2px var(--glow);border-color:var(--ac)}
+.tile:active{transform:scale(1.01)}
+@media (prefers-reduced-motion:reduce){.tile{animation:none}}
+.tile-badge{position:relative;z-index:2;width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--ac);background:var(--badge-bg);box-shadow:0 0 30px var(--glow), inset 0 0 18px var(--glow)}
 .tile-badge svg{width:31px;height:31px}
 .tile-badge img{width:30px;height:30px;object-fit:contain}
-.tile-title{position:relative;z-index:2;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#fff;text-align:center;line-height:1.05;text-shadow:0 2px 10px rgba(0,0,0,.45)}
-.tile-sub{position:relative;z-index:2;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ac);text-shadow:0 0 14px var(--glow)}
-.tile-rule{position:relative;z-index:2;width:56%;max-width:150px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--ac) 18%,var(--ac) 82%,transparent);box-shadow:0 0 9px var(--glow)}
-.tile-eval{--ac:#5B93F5;--glow:rgba(70,125,245,.38);--edge:rgba(91,147,245,.5);--badge-bg:rgba(40,80,180,.35);--base1:#2C5AA8;--base2:#14284D}
-.tile-bench{--ac:#3FD08E;--glow:rgba(40,200,120,.34);--edge:rgba(63,208,142,.5);--badge-bg:rgba(20,110,70,.35);--base1:#1B7A4E;--base2:#0B3524}
-.tile-train{--ac:#B08CFF;--glow:rgba(150,95,250,.38);--edge:rgba(176,140,255,.5);--badge-bg:rgba(80,45,160,.35);--base1:#6A2FA8;--base2:#2C1152}
+.tile-title{position:relative;z-index:2;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#fff;text-align:center;line-height:1.02;text-shadow:0 2px 12px rgba(0,0,0,.5);padding:0 8px}
+.tile-sub{position:relative;z-index:2;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--ac);text-shadow:0 0 16px var(--glow)}
+.tile-eval{--ac:#6BA0FF;--glow:rgba(80,140,255,.5);--edge:rgba(107,160,255,.6);--badge-bg:rgba(48,96,210,.4);--base1:#3D74D8;--base2:#152A55}
+.tile-bench{--ac:#45E0A0;--glow:rgba(45,220,135,.46);--edge:rgba(69,224,160,.6);--badge-bg:rgba(22,130,82,.4);--base1:#22A96C;--base2:#0C3D28}
+.tile-train{--ac:#C29CFF;--glow:rgba(165,110,255,.5);--edge:rgba(194,156,255,.6);--badge-bg:rgba(95,52,185,.4);--base1:#8747D8;--base2:#301460}
 .tile-identity{--ac:#E7B93E;--glow:rgba(220,175,55,.36);--edge:rgba(210,170,60,.55);--badge-bg:rgba(120,90,25,.4);--base1:#B08A22;--base2:#5A4310}
 .home-quote-wrap{container-type:inline-size;margin-top:6px;padding:12px 6px 6px;text-align:center}
 .home-quote{display:inline-block;max-width:100%;font-family:'Barlow',sans-serif;font-style:italic;line-height:1.4;letter-spacing:0.3px;color:var(--text2);white-space:nowrap;font-size:clamp(9px,2.6cqw,13px)}
@@ -151,6 +154,29 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .fb-text{font-size:14px;line-height:1.6}
 .fb-great .fb-label{color:var(--green)}
 .fb-improve .fb-label{color:var(--amber)}
+/* Hybrid feedback panel (Feedback + Self Feedback current entry) */
+.fb-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:16px;margin-bottom:6px}
+.fb-panel-head{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.fb-panel-head svg{width:18px;height:18px;color:var(--forge-gold);flex-shrink:0}
+.fb-panel-head span{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text)}
+.fb-block{position:relative;overflow:hidden;border-radius:12px;padding:15px;margin-bottom:11px}
+.fb-block:last-child{margin-bottom:0}
+.fb-block.great{background:radial-gradient(130% 100% at 100% 0%,rgba(46,158,107,.22),var(--bg3) 58%);border:1px solid rgba(46,158,107,.4)}
+.fb-block.improve{background:radial-gradient(130% 100% at 100% 0%,rgba(217,138,61,.22),var(--bg3) 58%);border:1px solid rgba(217,138,61,.4)}
+.fb-wm{position:absolute;top:-12px;right:-8px;pointer-events:none}
+.fb-wm svg{width:82px;height:82px}
+.fb-block.great .fb-wm{color:rgba(63,208,142,.13)}
+.fb-block.improve .fb-wm{color:rgba(227,154,78,.13)}
+.fb-block-head{position:relative;display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.fb-tile{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fb-tile svg{width:17px;height:17px}
+.fb-block.great .fb-tile{background:rgba(46,158,107,.18);color:#3FD08E}
+.fb-block.improve .fb-tile{background:rgba(217,138,61,.18);color:#E39A4E}
+.fb-block-label{font-size:12px;letter-spacing:1.2px;font-weight:600;text-transform:uppercase}
+.fb-block.great .fb-block-label{color:#3FD08E}
+.fb-block.improve .fb-block-label{color:#E39A4E}
+.fb-block-text{position:relative;font-size:14px;line-height:1.55;color:var(--text)}
+.fb-block .self-fb-textarea{position:relative;z-index:1;margin-top:2px}
 
 /* SELF EVAL / SELF FEEDBACK */
 .self-eval-row{display:flex;align-items:center;gap:12px;padding:11px 13px;background:var(--bg3);border-radius:8px;margin-bottom:5px;border:1px solid var(--border)}
@@ -367,35 +393,26 @@ firebase.auth().onAuthStateChanged(user => {
     </div>
   </div>
   <div class="home-body">
-    <div class="welcome-bar">
-      <p>Welcome back</p>
-      <h2 id="welcome-name"><span>Coach</span></h2>
-    </div>
     <div class="tiles-grid">
-      <button type="button" class="tile tile-eval" onclick="nav('evaluation')">
-        <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="7" y="5" width="18" height="24" rx="3" stroke="white" stroke-width="2"/><rect x="11" y="3" width="10" height="5" rx="1.5" fill="white"/><path d="M11 17.5l3.4 3.4L22 13.2" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="tile-title">Evaluation</span>
-        <span class="tile-sub">(Subjective)</span>
-        <span class="tile-rule"></span>
-      </button>
-      <button type="button" class="tile tile-bench" onclick="nav('benchmarks')">
-        <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="4" y="17" width="6" height="11" rx="1.5" fill="white"/><rect x="13" y="10" width="6" height="18" rx="1.5" fill="white"/><rect x="22" y="4" width="6" height="24" rx="1.5" fill="white"/></svg></span>
-        <span class="tile-title">Benchmarks</span>
-        <span class="tile-sub">(Objective)</span>
-        <span class="tile-rule"></span>
-      </button>
-      <button type="button" class="tile tile-train" onclick="nav('videos')">
-        <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="17" rx="3" stroke="white" stroke-width="2"/><path d="M13.5 11l6.5 3.5-6.5 3.5V11z" fill="white"/><path d="M11 27h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span>
-        <span class="tile-title">Training Modules</span>
-        <span class="tile-sub">(Videos)</span>
-        <span class="tile-rule"></span>
-      </button>
-      <button type="button" class="tile tile-identity" onclick="nav('identity')">
-        <span class="tile-badge"><img src="icons/forge-logo-gold.png" alt="" style="filter:brightness(0) invert(1)"></span>
-        <span class="tile-title">Forge Identity</span>
-        <span class="tile-sub">(DNA)</span>
-        <span class="tile-rule"></span>
-      </button>
+      <div class="tiles-row">
+        <button type="button" class="tile tile-eval" onclick="nav('evaluation')">
+          <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="7" y="5" width="18" height="24" rx="3" stroke="white" stroke-width="2"/><rect x="11" y="3" width="10" height="5" rx="1.5" fill="white"/><path d="M11 17.5l3.4 3.4L22 13.2" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="tile-title">Evaluation</span>
+          <span class="tile-sub">(Subjective)</span>
+        </button>
+        <button type="button" class="tile tile-bench" onclick="nav('benchmarks')">
+          <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="4" y="17" width="6" height="11" rx="1.5" fill="white"/><rect x="13" y="10" width="6" height="18" rx="1.5" fill="white"/><rect x="22" y="4" width="6" height="24" rx="1.5" fill="white"/></svg></span>
+          <span class="tile-title">Benchmarks</span>
+          <span class="tile-sub">(Objective)</span>
+        </button>
+      </div>
+      <div class="tiles-row">
+        <button type="button" class="tile tile-train" onclick="nav('videos')">
+          <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="17" rx="3" stroke="white" stroke-width="2"/><path d="M13.5 11l6.5 3.5-6.5 3.5V11z" fill="white"/><path d="M11 27h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <span class="tile-title">Training Modules</span>
+          <span class="tile-sub">(Videos)</span>
+        </button>
+      </div>
     </div>
     <div class="home-quote-wrap">
       <p class="home-quote"><span class="q-mark">&ldquo;</span>Excellence is the sum of the millions of small, honest actions<span class="q-mark">&rdquo;</span></p>
@@ -473,18 +490,6 @@ firebase.auth().onAuthStateChanged(user => {
   <div class="search-bar"><div class="search-wrap"><input type="text" id="s-beh" placeholder="Search name or number..." oninput="renderList('behaviors')"/></div></div>
   <div class="filter-bar" id="f-beh"></div>
   <div class="list-body" id="l-beh"></div>
-</div>
-
-<!-- FORGE IDENTITY (groups Feedback, Values, Forge Behaviors) -->
-<div id="identity" class="screen">
-  <div class="header">
-    <button type="button" class="back-btn" onclick="nav('home')">&#8592;</button>
-    <div class="header-title">Forge Identity</div>
-    <div class="hdr-right"></div>
-  </div>
-  <div class="search-bar"><div class="search-wrap"><input type="text" id="s-ident" placeholder="Search name or number..." oninput="renderList('identity')"/></div></div>
-  <div class="filter-bar" id="f-ident"></div>
-  <div class="list-body" id="l-ident"></div>
 </div>
 
 <!-- PLAYER DETAIL -->
@@ -619,7 +624,7 @@ function processBenchmarks(rows) {
 // These key strings must match the column headers on the "Evaluation (Matrix)"
 // sheet exactly — any column not present there simply renders as "—".
 const EVAL_GROUPS = {
-  'Mindset':   ['Team Approach','Social Skills','Level of Engagement (on and off ball)','Mentality','Effort/Work Ethic','Intensity','Competitiveness','Energy (high & positive)','Level of Correction (with feedback)'],
+  'Mindset':   ['Social Skills','Level of Engagement (on and off ball)','Intensity','Competitiveness','Energy (high & positive)','Level of Correction (with feedback)'],
   'Technique': ['Controlled Pass','Oriented Control','Dribble','Carry','Shooting','Ball Protection','Ball Conducting'],
   'Tactical':  ['Body Orientation','Scanning','Space','Time','Deception','Teammates','Opponents','Support','Decision Making','Transition'],
   'Physical':  ['Acceleration','Maximum Speed','Deceleration','Change of Direction','Agility','Balance','Coordination','Reaction Speed','Endurance','Strength']
@@ -879,7 +884,7 @@ function show(id) {
 }
 
 function nav(id) {
-  const sections = ['benchmarks','evaluation','feedback','values','behaviors','identity'];
+  const sections = ['benchmarks','evaluation'];
   const isPlayer = currentUser && currentUser.role === 'player';
   if (isPlayer && sections.includes(id)) {
     showDetail(currentUser.number, id);
@@ -1285,7 +1290,6 @@ function loginSuccess(userKey) {
     currentUser.initials = fullName.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() || 'C';
   }
   document.getElementById('home-av').textContent = currentUser.initials;
-  document.getElementById('welcome-name').innerHTML = '<span>' + (currentUser.displayName || currentUser.name) + '</span>';
   const isStaff = currentUser.role === 'coach' || currentUser.role === 'admin';
   document.getElementById('role-badge').innerHTML = isStaff
     ? '<span class="coach-badge">' + (currentUser.role === 'admin' ? 'Admin' : 'Coach') + '</span>' : '';
@@ -1302,7 +1306,7 @@ function getPlayers() {
 function byNum(arr, num) { return arr.find(r => r.num === num) || {num}; }
 
 function renderList(section) {
-  const sid = {benchmarks:'bench', evaluation:'eval', feedback:'fb', values:'val', behaviors:'beh', identity:'ident'}[section];
+  const sid = {benchmarks:'bench', evaluation:'eval', feedback:'fb', values:'val', behaviors:'beh'}[section];
   const q = document.getElementById('s-' + sid).value.toLowerCase();
   let players = getPlayers();
   if (teamFilter !== 'All') players = players.filter(p => p.team === teamFilter);
@@ -1328,81 +1332,48 @@ function showDetail(num, fromSection) {
   const bench  = byNum(DB.benchmarks, num);
   const evalD  = byNum(DB.evaluation, num);
   const fb     = byNum(DB.feedback, num);
-  const val    = byNum(DB.values, num);
   const fund   = byNum(DB.fundamental, num);
-  const skill  = byNum(DB.skillbeh, num);
-  const titles = {benchmarks:'Benchmarks', evaluation:'Evaluation', feedback:'Feedback', values:'Values', behaviors:'Forge Behaviors', identity:'Forge Identity'};
+  const val    = byNum(DB.values, num);
+  const titles = {benchmarks:'Benchmarks', evaluation:'Evaluation'};
   document.getElementById('detail-hdr').textContent = titles[fromSection] || '#'+num;
-  // "RS" rating-scale shortcut appears only on Evaluation and Forge Identity.
-  document.getElementById('detail-hdr-right').innerHTML =
-    (fromSection === 'evaluation' || fromSection === 'identity')
-      ? '<button type="button" class="rs-btn" onclick="openRatingScale()" title="Rating scale" aria-label="Rating scale">RS</button>'
-      : '';
+  // Rating-scale shortcut (?) appears only on Evaluation.
+  document.getElementById('detail-hdr-right').innerHTML = (fromSection === 'evaluation')
+    ? '<button type="button" class="rs-btn" onclick="openRatingScale()" title="Rating scale" aria-label="Rating scale">?</button>'
+    : '';
   const backDest = currentUser.role === 'player' ? 'home' : fromSection;
   document.getElementById('detail-back').onclick = () => {
     show(backDest);
     if (currentUser.role !== 'player') renderList(fromSection);
   };
   const phdr = `<div class="player-hdr"><div class="p-avatar">${initials(player.name)}</div><div class="p-meta"><h2>${player.name}</h2><p>#${num} · ${player.team}</p></div></div>`;
-  if (fromSection === 'identity') {
-    // Forge Identity groups the player's coach-authored Feedback, Values, and
-    // Forge Behaviors into one place — same tabs for players and coaches.
+  if (fromSection === 'evaluation') {
+    // Tabs: Forge Identity (Mindset + Behaviors + Feedback), then the three
+    // evaluation categories, then the player's Self Feedback (editable for
+    // players, read-only for staff).
     const isPlayer = currentUser.role === 'player';
-    const tabNames = ['Feedback','Self Feedback','Values','Behaviors'];
+    const tabNames = ['Forge Identity','Technique','Tactical','Physical','Self Feedback'];
     document.getElementById('detail-tabs').innerHTML = tabNames.map((t,i) =>
       `<div class="tab${i===0?' active':''}" onclick="switchTab(${i})">${t}</div>`
     ).join('');
-    const behaviorsContent =
-      buildBehaviorSection(fund,'Fundamental Behaviors','No fundamental behaviors data yet.','fundamental') +
-      buildBehaviorSection(skill,'Skill Behaviors','No skill behaviors data yet.','skillbeh');
-    const contents = [buildFb(fb,player), buildSelfFeedbackPanel(num, isPlayer), buildVal(val), behaviorsContent];
-    document.getElementById('detail-body').innerHTML = phdr + contents.map((c,i) =>
-      `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
-    ).join('');
-  } else if (fromSection === 'evaluation') {
-    // Evaluation splits into its four categories, plus the player's own
-    // self-eval / self-feedback (editable for players, read-only for staff).
-    const isPlayer = currentUser.role === 'player';
-    const groups = Object.keys(EVAL_GROUPS);
-    const tabNames = groups.concat(['RISE UP Self Eval']);
-    document.getElementById('detail-tabs').innerHTML = tabNames.map((t,i) =>
-      `<div class="tab${i===0?' active':''}" onclick="switchTab(${i})">${t}</div>`
-    ).join('');
-    const contents = groups.map(g => buildEvalGroup(evalD, g))
-      .concat([buildSelfEvalPanel(num, isPlayer)]);
-    document.getElementById('detail-body').innerHTML = phdr + contents.map((c,i) =>
-      `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
-    ).join('');
-  } else if (currentUser.role === 'player') {
-    document.getElementById('detail-tabs').innerHTML = '';
-    const map = {benchmarks:buildBench(bench), feedback:buildFb(fb,player), values:buildVal(val),
-               behaviors: buildBehaviorSection(fund,'Fundamental Behaviors','No fundamental behaviors data yet.','fundamental') + buildBehaviorSection(skill,'Skill Behaviors','No skill behaviors data yet.','skillbeh')};
-    document.getElementById('detail-body').innerHTML = phdr + `<div class="tab-content active">${map[fromSection]||''}</div>`;
-  } else if (fromSection === 'behaviors') {
-    // Behaviors: show only Fundamental + Skill Behaviors tabs
-    const behTabs = ['Fundamental Behaviors','Skill Behaviors'];
-    document.getElementById('detail-tabs').innerHTML = behTabs.map((t,i) =>
-      `<div class="tab${i===0?' active':''}" onclick="switchTab(${i})">${t}</div>`
-    ).join('');
-    const behContents = [
-      buildBehaviorSection(fund,'Fundamental Behaviors','No fundamental behaviors data yet.','fundamental'),
-      buildBehaviorSection(skill,'Skill Behaviors','No skill behaviors data yet.','skillbeh')
+    const forgeIdentity =
+      buildBehaviorSection(fund, 'Behaviors', 'No behaviors data yet.', 'fundamental') +
+      buildVal(val) +
+      buildEvalGroup(evalD, 'Mindset') +
+      buildFb(fb, player);
+    const contents = [
+      forgeIdentity,
+      buildEvalGroup(evalD, 'Technique'),
+      buildEvalGroup(evalD, 'Tactical'),
+      buildEvalGroup(evalD, 'Physical'),
+      buildSelfFeedbackPanel(num, isPlayer)
     ];
-    document.getElementById('detail-body').innerHTML = phdr + behContents.map((c,i) =>
+    document.getElementById('detail-body').innerHTML = phdr + contents.map((c,i) =>
       `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
     ).join('');
   } else {
-    // Coaches/admins get the existing 4 tabs plus a read-only view of the
-    // player's self-eval / self-feedback.
-    const tabNames = ['Benchmarks','Evaluation','Feedback','Values','RISE UP Self Eval','Self Feedback'];
-    const tidx = {benchmarks:0, evaluation:1, feedback:2, values:3}[fromSection] || 0;
-    document.getElementById('detail-tabs').innerHTML = tabNames.map((t,i) =>
-      `<div class="tab${i===tidx?' active':''}" onclick="switchTab(${i})">${t}</div>`
-    ).join('');
-    const contents = [buildBench(bench), buildEval(evalD), buildFb(fb,player), buildVal(val), buildSelfEvalPanel(num, false), buildSelfFeedbackPanel(num, false)];
-    document.getElementById('detail-body').innerHTML = phdr + contents.map((c,i) =>
-      `<div class="tab-content${i===tidx?' active':''}" id="tc-${i}">${c}</div>`
-    ).join('');
+    // Benchmarks — single view, no tabs (same for players and staff).
+    document.getElementById('detail-tabs').innerHTML = '';
+    document.getElementById('detail-body').innerHTML = phdr + `<div class="tab-content active">${buildBench(bench)}</div>`;
   }
   show('player-detail');
   // Animate bars after screen is visible — covers both player and coach paths
@@ -1561,14 +1532,37 @@ function buildEval(e) {
   return html;
 }
 
+// ── Feedback panel (shared by coach Feedback + player Self Feedback) ─────
+const FB_ICONS = {
+  head: '<svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.6 5.6 6.1.7-4.6 4.1 1.3 6L12 16.9 6.6 19.5l1.3-6L3.3 9.3l6.1-.7z"/></svg>',
+  up:   '<svg viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+
+// One glowing feedback block. `body` is trusted HTML (already-escaped text or
+// a textarea for the editable case).
+function fbBlock(kind, label, body) {
+  const icon = kind === 'great' ? FB_ICONS.star : FB_ICONS.up;
+  return `<div class="fb-block ${kind}">
+    <div class="fb-wm">${icon}</div>
+    <div class="fb-block-head"><span class="fb-tile">${icon}</span><span class="fb-block-label">${label}</span></div>
+    <div class="fb-block-text">${body}</div>
+  </div>`;
+}
+
+function fbPanel(title, inner) {
+  return `<div class="fb-panel"><div class="fb-panel-head">${FB_ICONS.head}<span>${title}</span></div>${inner}</div>`;
+}
+
 function buildFb(fb, player) {
   const num = (fb && fb.num) || player.num;
   const mountId = 'hist-feedback-' + num;
   setTimeout(() => populateHistory('feedback', num, fb || {num}, mountId, 'feedback'), 0);
   const mount = `<div id="${mountId}"></div>`;
   if(!fb||(!fb.great&&!fb.improve))return`<div class="no-data">No feedback recorded yet for ${player.name}.</div>`+mount;
-  return(fb.great?`<div class="fb-card fb-great"><div class="fb-label">One Great Thing</div><div class="fb-text">${fb.great}</div></div>`:'')+
-    (fb.improve?`<div class="fb-card fb-improve"><div class="fb-label">One to Improve</div><div class="fb-text">${fb.improve}</div></div>`:'')+mount;
+  const blocks = (fb.great ? fbBlock('great','One Great Thing', escapeHtml(fb.great)) : '')
+    + (fb.improve ? fbBlock('improve','One to Improve', escapeHtml(fb.improve)) : '');
+  return fbPanel("Coach's Feedback", blocks) + mount;
 }
 
 // Generic behavior sheet processor — reads all numeric columns
@@ -1590,9 +1584,9 @@ function buildVal(v) {
   const mountId = 'hist-values-' + v.num;
   setTimeout(() => populateHistory('values', v.num, v, mountId, 'numeric'), 0);
   const mount = `<div id="${mountId}"></div>`;
-  if(!keys.some(k=>v[k]!=null))return'<div class="no-data">No values data recorded yet.</div>'+mount;
-  let html=v.Average?`<div class="avg-badge"><span>Average Score</span><strong>${v.Average.toFixed(2)}/10</strong></div>`:'';
-  html+=`<div class="mg"><h4>Values Scores</h4>${keys.map(k=>srow(k,v[k])).join('')}</div>`;
+  if(!keys.some(k=>v[k]!=null))return'<div class="no-data">No RISE UP data recorded yet.</div>'+mount;
+  let html=v.Average?`<div class="avg-badge"><span>RISE UP Average</span><strong>${v.Average.toFixed(2)}/10</strong></div>`:'';
+  html+=`<div class="mg"><h4>RISE UP</h4>${keys.map(k=>srow(k,v[k])).join('')}</div>`;
   return html+mount;
 }
 
@@ -1772,21 +1766,19 @@ async function populateSelfFeedback(playerNum, editable, panelId) {
   const archive = entries.slice(1);
   el.className = '';
   if (editable) {
-    el.innerHTML = `<div class="mg"><h4>What's Going Well</h4>
-        <textarea class="self-fb-textarea" id="${panelId}-well" placeholder="What are you proud of? Where are you finding success in your development?">${escapeHtml(current.doingWell || '')}</textarea>
-      </div>
-      <div class="mg"><h4>What To Improve</h4>
-        <textarea class="self-fb-textarea" id="${panelId}-improve" placeholder="What could you be doing better? What are you working on?">${escapeHtml(current.toImprove || '')}</textarea>
-      </div>
-      <button type="button" class="btn-primary" onclick="submitSelfFeedback(${playerNum},'${panelId}')">Save My Feedback</button>
+    const wellBox = `<textarea class="self-fb-textarea" id="${panelId}-well" placeholder="What are you proud of? Where are you finding success in your development?">${escapeHtml(current.doingWell || '')}</textarea>`;
+    const improveBox = `<textarea class="self-fb-textarea" id="${panelId}-improve" placeholder="What could you be doing better? What are you working on?">${escapeHtml(current.toImprove || '')}</textarea>`;
+    el.innerHTML = fbPanel('My Reflection',
+        fbBlock('great', "What's Going Well", wellBox) + fbBlock('improve', 'What To Improve', improveBox))
+      + `<button type="button" class="btn-primary" onclick="submitSelfFeedback(${playerNum},'${panelId}')">Save My Feedback</button>
       <div class="login-error" id="${panelId}-msg" style="min-height:18px;margin-top:8px"></div>`
       + buildArchiveList(archive, renderSelfFeedbackArchiveEntry);
+  } else if (entries.length && (current.doingWell || current.toImprove)) {
+    const blocks = (current.doingWell ? fbBlock('great','Going Well', escapeHtml(current.doingWell)) : '')
+      + (current.toImprove ? fbBlock('improve','To Improve', escapeHtml(current.toImprove)) : '');
+    el.innerHTML = fbPanel('Self Feedback', blocks) + buildArchiveList(archive, renderSelfFeedbackArchiveEntry);
   } else {
-    el.innerHTML = entries.length
-      ? (current.doingWell ? `<div class="fb-card fb-great"><div class="fb-label">Going Well</div><div class="fb-text">${escapeHtml(current.doingWell)}</div></div>` : '')
-        + (current.toImprove ? `<div class="fb-card fb-improve"><div class="fb-label">To Improve</div><div class="fb-text">${escapeHtml(current.toImprove)}</div></div>` : '')
-        + buildArchiveList(archive, renderSelfFeedbackArchiveEntry)
-      : `<div class="no-data">This player hasn't submitted self-feedback yet.</div>`;
+    el.innerHTML = `<div class="no-data">This player hasn't submitted self-feedback yet.</div>`;
   }
 }
 
