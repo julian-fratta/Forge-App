@@ -74,32 +74,52 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 
 /* HOME */
 .home-body{padding:12px;flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;min-height:0}
-.tiles-grid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:1 1 auto;min-height:0;width:100%}
-.tiles-row{display:flex;justify-content:center;gap:16px;width:100%}
-.tiles-row:last-child{margin-top:-6px}
-.tile{position:relative;flex:0 0 49%;aspect-ratio:1;max-width:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:50%;cursor:pointer;overflow:hidden;
-  background:radial-gradient(115% 100% at 50% 6%, var(--base1) 0%, var(--base2) 68%);
-  border:1.5px solid var(--edge);
-  box-shadow:0 10px 26px -6px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04) inset, inset 0 2px 0 rgba(255,255,255,.10);
-  animation:tilePulse 3.4s ease-in-out infinite;
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s ease,border-color .18s ease}
-.tile-eval{animation-delay:0s}
-.tile-bench{animation-delay:.7s}
-.tile-train{animation-delay:1.4s}
-@keyframes tilePulse{0%,100%{transform:scale(1);box-shadow:0 10px 26px -6px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.10), 0 0 10px -2px var(--glow)}50%{transform:scale(1.04);box-shadow:0 12px 30px -6px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.10), 0 0 30px 2px var(--glow)}}
-.tile::before{content:'';position:absolute;inset:0;background:radial-gradient(70% 58% at 50% 14%, var(--glow) 0%, transparent 62%);pointer-events:none}
-.tile:hover{animation-play-state:paused;transform:scale(1.06);box-shadow:0 16px 34px -6px rgba(0,0,0,.6), 0 0 34px 2px var(--glow);border-color:var(--ac)}
-.tile:active{transform:scale(1.01)}
-@media (prefers-reduced-motion:reduce){.tile{animation:none}}
-.tile-badge{position:relative;z-index:2;width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--ac);background:var(--badge-bg);box-shadow:0 0 30px var(--glow), inset 0 0 18px var(--glow)}
-.tile-badge svg{width:31px;height:31px}
-.tile-badge img{width:30px;height:30px;object-fit:contain}
-.tile-title{position:relative;z-index:2;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#fff;text-align:center;line-height:1.02;text-shadow:0 2px 12px rgba(0,0,0,.5);padding:0 8px}
-.tile-sub{position:relative;z-index:2;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--ac);text-shadow:0 0 16px var(--glow)}
-.tile-eval{--ac:#6BA0FF;--glow:rgba(80,140,255,.5);--edge:rgba(107,160,255,.6);--badge-bg:rgba(48,96,210,.4);--base1:#3D74D8;--base2:#152A55}
-.tile-bench{--ac:#45E0A0;--glow:rgba(45,220,135,.46);--edge:rgba(69,224,160,.6);--badge-bg:rgba(22,130,82,.4);--base1:#22A96C;--base2:#0C3D28}
-.tile-train{--ac:#C29CFF;--glow:rgba(165,110,255,.5);--edge:rgba(194,156,255,.6);--badge-bg:rgba(95,52,185,.4);--base1:#8747D8;--base2:#301460}
-.tile-identity{--ac:#E7B93E;--glow:rgba(220,175,55,.36);--edge:rgba(210,170,60,.55);--badge-bg:rgba(120,90,25,.4);--base1:#B08A22;--base2:#5A4310}
+/* Triangle home stage — three tappable regions fill the whole triangle */
+.tri-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.tri-stage::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;background:
+  radial-gradient(125% 80% at 50% 38%, transparent 54%, rgba(3,7,14,.55) 100%),
+  radial-gradient(24% 18% at 50% 4%, rgba(234,196,104,.22), transparent 68%),
+  radial-gradient(48% 46% at 18% 44%, rgba(80,140,255,.13), transparent 70%),
+  radial-gradient(48% 46% at 82% 44%, rgba(45,220,135,.11), transparent 70%);
+  animation:auraPulse 6.5s ease-in-out infinite}
+@keyframes auraPulse{0%,100%{opacity:.7}50%{opacity:1}}
+/* faint diagonal light rays that fill the empty corners */
+.tri-rays{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;animation:auraPulse 7.5s ease-in-out infinite}
+.tri-rays line{vector-effect:non-scaling-stroke}
+/* subtle, thin grounding glow under the base — dim & neutral, not a purple pool */
+.tri-floor{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);width:70%;height:5%;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 55% 100% at 50% 0%, rgba(150,160,200,.12), transparent 72%);
+  filter:blur(3px);animation:auraPulse 7s ease-in-out infinite}
+.tri-wrap{position:absolute;inset:0;z-index:1;
+  -webkit-box-reflect:below -8px linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,.14) 20%, rgba(255,255,255,0) 55%)}
+.tri-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;transform-origin:50% 58%;animation:triBreathe 5.5s ease-in-out infinite}
+@keyframes triBreathe{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.012)}}
+@media (prefers-reduced-motion:reduce){.tri-svg{animation:none}}
+.tri-region{transition:fill .2s ease;cursor:pointer;outline:none}
+.r-eval{fill:rgba(80,140,255,.05)} .r-eval:hover,.r-eval:focus-visible{fill:rgba(80,140,255,.15)}
+.r-bench{fill:rgba(45,220,135,.045)} .r-bench:hover,.r-bench:focus-visible{fill:rgba(45,220,135,.14)}
+.r-train{fill:rgba(165,110,255,.05)} .r-train:hover,.r-train:focus-visible{fill:rgba(165,110,255,.15)}
+.tri-side{fill:none;stroke-width:2.5;stroke-linecap:round;vector-effect:non-scaling-stroke;pointer-events:none}
+.s-eval{stroke:#6BA0FF;filter:drop-shadow(0 0 3px #6BA0FF) drop-shadow(0 0 10px rgba(107,160,255,.7))}
+.s-bench{stroke:#45E0A0;filter:drop-shadow(0 0 3px #45E0A0) drop-shadow(0 0 10px rgba(69,224,160,.7))}
+.s-train{stroke:#C9A0FF;stroke-width:3;filter:drop-shadow(0 0 4px #C29CFF) drop-shadow(0 0 14px rgba(194,156,255,.85))}
+.tri-label{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;width:22%;max-width:132px;pointer-events:none;z-index:2}
+.l-eval{left:37.5%;top:52%;--ac:#6BA0FF;--glow:rgba(80,140,255,.5);--badge-bg:rgba(48,96,210,.34)}
+.l-bench{left:62.5%;top:52%;--ac:#45E0A0;--glow:rgba(45,220,135,.46);--badge-bg:rgba(22,130,82,.34)}
+.l-train{left:50%;top:86%;--ac:#C29CFF;--glow:rgba(165,110,255,.5);--badge-bg:rgba(95,52,185,.34)}
+.tri-badge{width:clamp(40px,9.5vw,50px);height:clamp(40px,9.5vw,50px);border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--ac);background:var(--badge-bg);box-shadow:0 0 20px var(--glow), inset 0 0 14px var(--glow);animation:triPulse 3.4s ease-in-out infinite}
+.tri-badge svg{width:46%;height:46%}
+.l-eval .tri-badge{animation-delay:0s}
+.l-bench .tri-badge{animation-delay:.6s}
+.l-train .tri-badge{animation-delay:1.2s}
+@keyframes triPulse{0%,100%{box-shadow:0 0 14px -2px var(--glow), inset 0 0 12px var(--glow)}50%{box-shadow:0 0 30px 3px var(--glow), inset 0 0 14px var(--glow)}}
+@media (prefers-reduced-motion:reduce){.tri-badge{animation:none}}
+.tri-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(11px,2.7vw,15px);font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#fff;line-height:1.02;text-shadow:0 2px 10px rgba(0,0,0,.7)}
+.tri-sub{font-family:'Barlow Condensed',sans-serif;font-size:clamp(8px,2vw,10px);font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--ac);text-shadow:0 0 14px var(--glow)}
+.tri-core{position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);width:clamp(42px,10vw,52px);aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 34%, #1b2942, #0b1120);border:1px solid rgba(201,162,39,.6);pointer-events:none;z-index:3;animation:coreGlow 5.5s ease-in-out infinite}
+@keyframes coreGlow{0%,100%{box-shadow:0 0 16px rgba(201,162,39,.16), inset 0 0 14px rgba(0,0,0,.6)}50%{box-shadow:0 0 30px rgba(201,162,39,.34), inset 0 0 14px rgba(0,0,0,.6)}}
+@media (prefers-reduced-motion:reduce){.tri-core{animation:none}}
+.tri-core img{width:56%;height:56%;object-fit:contain}
 .home-quote-wrap{container-type:inline-size;margin-top:6px;padding:12px 6px 6px;text-align:center}
 .home-quote{display:inline-block;max-width:100%;font-family:'Barlow',sans-serif;font-style:italic;line-height:1.4;letter-spacing:0.3px;color:var(--text2);white-space:nowrap;font-size:clamp(9px,2.6cqw,13px)}
 .home-quote .q-mark{color:var(--forge-gold);font-style:normal;font-family:Georgia,'Times New Roman',serif;font-size:1.5em;font-weight:700;vertical-align:-0.28em;opacity:.95;margin:0 3px}
@@ -393,25 +413,44 @@ firebase.auth().onAuthStateChanged(user => {
     </div>
   </div>
   <div class="home-body">
-    <div class="tiles-grid">
-      <div class="tiles-row">
-        <button type="button" class="tile tile-eval" onclick="nav('evaluation')">
-          <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="7" y="5" width="18" height="24" rx="3" stroke="white" stroke-width="2"/><rect x="11" y="3" width="10" height="5" rx="1.5" fill="white"/><path d="M11 17.5l3.4 3.4L22 13.2" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          <span class="tile-title">Evaluation</span>
-          <span class="tile-sub">(Subjective)</span>
-        </button>
-        <button type="button" class="tile tile-bench" onclick="nav('benchmarks')">
-          <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="4" y="17" width="6" height="11" rx="1.5" fill="white"/><rect x="13" y="10" width="6" height="18" rx="1.5" fill="white"/><rect x="22" y="4" width="6" height="24" rx="1.5" fill="white"/></svg></span>
-          <span class="tile-title">Benchmarks</span>
-          <span class="tile-sub">(Objective)</span>
-        </button>
-      </div>
-      <div class="tiles-row">
-        <button type="button" class="tile tile-train" onclick="nav('videos')">
-          <span class="tile-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="17" rx="3" stroke="white" stroke-width="2"/><path d="M13.5 11l6.5 3.5-6.5 3.5V11z" fill="white"/><path d="M11 27h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span>
-          <span class="tile-title">Training Modules</span>
-          <span class="tile-sub">(Videos)</span>
-        </button>
+    <div class="tri-stage">
+      <svg class="tri-rays" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <!-- light beams fanning out of the apex into the top corners -->
+        <line x1="50" y1="3" x2="1"  y2="2"  stroke="#6BA0FF" stroke-width="1" opacity=".16"/>
+        <line x1="50" y1="3" x2="1"  y2="24" stroke="#6BA0FF" stroke-width="1" opacity=".12"/>
+        <line x1="50" y1="3" x2="3"  y2="52" stroke="#6BA0FF" stroke-width="1" opacity=".08"/>
+        <line x1="50" y1="3" x2="15" y2="82" stroke="#6BA0FF" stroke-width="1" opacity=".05"/>
+        <line x1="50" y1="3" x2="99" y2="2"  stroke="#45E0A0" stroke-width="1" opacity=".16"/>
+        <line x1="50" y1="3" x2="99" y2="24" stroke="#45E0A0" stroke-width="1" opacity=".12"/>
+        <line x1="50" y1="3" x2="97" y2="52" stroke="#45E0A0" stroke-width="1" opacity=".08"/>
+        <line x1="50" y1="3" x2="85" y2="82" stroke="#45E0A0" stroke-width="1" opacity=".05"/>
+      </svg>
+      <div class="tri-floor"></div>
+      <div class="tri-wrap">
+        <svg class="tri-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <polygon class="tri-region r-eval"  points="50,2 1,95 50,62"  onclick="nav('evaluation')" role="button" tabindex="0" aria-label="Evaluation"></polygon>
+          <polygon class="tri-region r-bench" points="50,2 99,95 50,62"  onclick="nav('benchmarks')" role="button" tabindex="0" aria-label="Benchmarks"></polygon>
+          <polygon class="tri-region r-train" points="1,95 99,95 50,62"   onclick="nav('videos')" role="button" tabindex="0" aria-label="Training Modules"></polygon>
+          <line class="tri-side s-eval"  x1="50" y1="2" x2="1"  y2="95"></line>
+          <line class="tri-side s-bench" x1="50" y1="2" x2="99" y2="95"></line>
+          <line class="tri-side s-train" x1="1"  y1="95" x2="99" y2="95"></line>
+        </svg>
+        <div class="tri-label l-eval">
+          <span class="tri-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="7" y="5" width="18" height="24" rx="3" stroke="white" stroke-width="2"/><rect x="11" y="3" width="10" height="5" rx="1.5" fill="white"/><path d="M11 17.5l3.4 3.4L22 13.2" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="tri-title">Evaluation</span>
+          <span class="tri-sub">(Subjective)</span>
+        </div>
+        <div class="tri-label l-bench">
+          <span class="tri-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="4" y="17" width="6" height="11" rx="1.5" fill="white"/><rect x="13" y="10" width="6" height="18" rx="1.5" fill="white"/><rect x="22" y="4" width="6" height="24" rx="1.5" fill="white"/></svg></span>
+          <span class="tri-title">Benchmarks</span>
+          <span class="tri-sub">(Objective)</span>
+        </div>
+        <div class="tri-label l-train">
+          <span class="tri-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="17" rx="3" stroke="white" stroke-width="2"/><path d="M13.5 11l6.5 3.5-6.5 3.5V11z" fill="white"/><path d="M11 27h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <span class="tri-title">Training Modules</span>
+          <span class="tri-sub">(Videos)</span>
+        </div>
+        <div class="tri-core"><img src="icons/forge-logo-gold.png" alt="Forge"></div>
       </div>
     </div>
     <div class="home-quote-wrap">
@@ -728,29 +767,43 @@ function processTraining(rows) {
 }
 
 // ── Load data from Google Sheets ───────────────────────────────
-// Runs in the background behind the login screen (see boot section at the
-// bottom) — anything that needs USERS/DB must `await dataReady` first.
+// Stale-while-revalidate: on repeat visits we hydrate DB/USERS from the last
+// cached copy instantly (so sign-in doesn't wait on the network), then fetch a
+// fresh copy in the background. First-ever visit still waits for the network.
+// `freshDataPromise` lets sign-in fall back to the live fetch when a brand-new
+// account isn't in the cached USERS yet.
+const DATA_CACHE_KEY = 'forgeDataRaw_v1';
+let freshDataPromise = null;
+
+function applyRaw(raw) {
+  DB.players    = processPlayers(raw['Players'] || []);
+  DB.benchmarks = processBenchmarks(raw['Benchmarks (Matrix)'] || []);
+  DB.evaluation = processEvaluation(raw['Evaluation (Matrix)'] || []);
+  DB.feedback   = processFeedback(raw['Pivotal Feedback'] || [], DB.players);
+  DB.values     = processValues(raw['Values'] || []);
+  DB.training   = processTraining(raw['Training Modules'] || []);
+  DB.fundamental = processBehaviorSheet(raw['Fundamental Behaviors'] || []);
+  DB.skillbeh   = processBehaviorSheet(raw['Skill Behaviors'] || []);
+  processUsers(raw['Users'] || []);
+}
+
 async function loadData() {
+  let hadCache = false;
   try {
-    const res = await fetch(APPS_SCRIPT_URL + '?t=' + Date.now());
-    const raw = await res.json();
-    console.log('Data loaded - players:', (raw['Players']||[]).length, 'benchmarks:', (raw['Benchmarks (Matrix)']||[]).length);
-    console.log('Sheets returned by Apps Script:', Object.keys(raw));
-    console.log('Fundamental Behaviors rows:', (raw['Fundamental Behaviors']||[]).length, '| Skill Behaviors rows:', (raw['Skill Behaviors']||[]).length);
-    DB.players    = processPlayers(raw['Players'] || []);
-    DB.benchmarks = processBenchmarks(raw['Benchmarks (Matrix)'] || []);
-    DB.evaluation = processEvaluation(raw['Evaluation (Matrix)'] || []);
-    DB.feedback   = processFeedback(raw['Pivotal Feedback'] || [], DB.players);
-    DB.values     = processValues(raw['Values'] || []);
-    DB.training    = processTraining(raw['Training Modules'] || []);
-    DB.fundamental = processBehaviorSheet(raw['Fundamental Behaviors'] || []);
-    DB.skillbeh    = processBehaviorSheet(raw['Skill Behaviors'] || []);
-    processUsers(raw['Users'] || []);
-    console.log('DB ready - players:', DB.players.length, 'users:', Object.keys(USERS).length);
-  } catch(e) {
-    console.error(e);
-    throw new Error('DATA_LOAD_FAILED');
-  }
+    const cached = localStorage.getItem(DATA_CACHE_KEY);
+    if (cached) { applyRaw(JSON.parse(cached)); hadCache = true; console.log('Hydrated from cache - users:', Object.keys(USERS).length); }
+  } catch(e) { /* corrupt/absent cache — ignore, fall back to network */ }
+
+  freshDataPromise = fetch(APPS_SCRIPT_URL + '?t=' + Date.now())
+    .then(res => res.json())
+    .then(raw => {
+      applyRaw(raw);
+      console.log('Fresh data loaded - players:', DB.players.length, 'users:', Object.keys(USERS).length);
+      try { localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(raw)); } catch(e) { /* quota — skip caching */ }
+    });
+
+  if (hadCache) { freshDataPromise.catch(() => {}); return; } // don't block sign-in on the network
+  try { await freshDataPromise; } catch(e) { console.error(e); throw new Error('DATA_LOAD_FAILED'); }
 }
 
 // ── Player self-eval / self-feedback (Firestore) ────────────────
@@ -965,7 +1018,14 @@ async function doLogin() {
     ]);
     err.textContent = '';
     // Find user in sheet
-    const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
+    let userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
+    // Cache may be stale (new account added since last visit) — wait for the
+    // live fetch once before giving up.
+    if (!userEntry && freshDataPromise) {
+      err.textContent = 'Signing in...';
+      try { await freshDataPromise; } catch(e) {}
+      userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
+    }
     if (userEntry) {
       loginSuccess(userEntry[0]);
     } else {
@@ -999,8 +1059,10 @@ async function sendPasswordReset() {
     err.textContent = 'Unable to load player data. Please check your connection and try again.';
     return;
   }
-  // Check the email is a registered account
-  const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
+  // Check the email is a registered account (fall back to the live fetch in
+  // case the cached user list is stale).
+  let userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
+  if (!userEntry && freshDataPromise) { try { await freshDataPromise; } catch(e) {} userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email); }
   if (!userEntry) {
     err.style.color = 'var(--red)';
     err.textContent = 'That account is not registered. Please contact your coach.';
@@ -1056,8 +1118,10 @@ async function sendSetupLink() {
     err.textContent = 'Unable to load player data. Please check your connection and try again.';
     return;
   }
-  // Check email exists in Users sheet
-  const userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
+  // Check email exists in Users sheet (fall back to the live fetch if the
+  // cached list is stale).
+  let userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email);
+  if (!userEntry && freshDataPromise) { try { await freshDataPromise; } catch(e) {} userEntry = Object.entries(USERS).find(([k,v]) => v.email && v.email.toLowerCase() === email); }
   if (!userEntry) {
     err.style.color = 'var(--red)';
     err.textContent = 'Email not found. Please contact your coach.';
@@ -1465,9 +1529,14 @@ function buildBench(b) {
   return chartsHTML + metricsHTML + `<div id="${mountId}"></div>`;
 }
 
+let _benchCharts = [];
 function initBenchCharts() {
   const d = window._benchChartData;
   if (!d) return;
+  // Destroy previously-created charts so re-opening a player's Benchmarks
+  // doesn't throw "Canvas is already in use" and render blank.
+  _benchCharts.forEach(c => { try { c.destroy(); } catch(e){} });
+  _benchCharts = [];
   const baseOpts = () => ({
     responsive:true, maintainAspectRatio:false,
     plugins:{legend:{display:false},tooltip:{enabled:false}},
@@ -1499,15 +1568,15 @@ function initBenchCharts() {
   const bronze='rgba(140,106,63,0.9)',bronzeBg='rgba(140,106,63,0.15)';
   if (d.hasDri && document.getElementById('bench-dribble-chart')) {
     const f=d.driLbls.map((l,i)=>({l,v:d.driVals[i]})).filter(x=>x.v!=null);
-    new Chart(document.getElementById('bench-dribble-chart'),{type:'bar',data:{labels:f.map(x=>x.l),datasets:[{data:f.map(x=>x.v),backgroundColor:[greenBg,amberBg],borderColor:[green,amber],borderWidth:2,borderRadius:8,borderSkipped:false}]},options:baseOpts(),plugins:[dataLabelPlugin]});
+    _benchCharts.push(new Chart(document.getElementById('bench-dribble-chart'),{type:'bar',data:{labels:f.map(x=>x.l),datasets:[{data:f.map(x=>x.v),backgroundColor:[greenBg,amberBg],borderColor:[green,amber],borderWidth:2,borderRadius:8,borderSkipped:false}]},options:baseOpts(),plugins:[dataLabelPlugin]}));
   }
   if (d.hasFig8 && document.getElementById('bench-fig8-chart')) {
     const f=d.fig8Lbls.map((l,i)=>({l,v:d.fig8Vals[i]})).filter(x=>x.v!=null);
-    new Chart(document.getElementById('bench-fig8-chart'),{type:'line',data:{labels:f.map(x=>x.l),datasets:[{data:f.map(x=>x.v),borderColor:gold,backgroundColor:goldBg,borderWidth:2.5,pointBackgroundColor:gold,pointBorderColor:'rgba(255,255,255,0.8)',pointBorderWidth:1.5,pointRadius:5,fill:true,tension:0.35}]},options:baseOpts(),plugins:[dataLabelPlugin]});
+    _benchCharts.push(new Chart(document.getElementById('bench-fig8-chart'),{type:'line',data:{labels:f.map(x=>x.l),datasets:[{data:f.map(x=>x.v),borderColor:gold,backgroundColor:goldBg,borderWidth:2.5,pointBackgroundColor:gold,pointBorderColor:'rgba(255,255,255,0.8)',pointBorderWidth:1.5,pointRadius:5,fill:true,tension:0.35}]},options:baseOpts(),plugins:[dataLabelPlugin]}));
   }
   if (d.hasStar && document.getElementById('bench-star-chart')) {
     const f=d.starLbls.map((l,i)=>({l,v:d.starVals[i]})).filter(x=>x.v!=null);
-    new Chart(document.getElementById('bench-star-chart'),{type:'line',data:{labels:f.map(x=>x.l),datasets:[{data:f.map(x=>x.v),borderColor:bronze,backgroundColor:bronzeBg,borderWidth:2.5,pointBackgroundColor:bronze,pointBorderColor:'rgba(255,255,255,0.8)',pointBorderWidth:1.5,pointRadius:5,fill:true,tension:0.35}]},options:baseOpts(),plugins:[dataLabelPlugin]});
+    _benchCharts.push(new Chart(document.getElementById('bench-star-chart'),{type:'line',data:{labels:f.map(x=>x.l),datasets:[{data:f.map(x=>x.v),borderColor:bronze,backgroundColor:bronzeBg,borderWidth:2.5,pointBackgroundColor:bronze,pointBorderColor:'rgba(255,255,255,0.8)',pointBorderWidth:1.5,pointRadius:5,fill:true,tension:0.35}]},options:baseOpts(),plugins:[dataLabelPlugin]}));
   }
 }
 
