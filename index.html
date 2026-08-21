@@ -74,52 +74,57 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 
 /* HOME */
 .home-body{padding:12px;flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;min-height:0}
-/* Triangle home stage — three tappable regions fill the whole triangle */
-.tri-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+/* Home — three neon triangles (two inverted on top, one upright below) framing the Forge mark; fills the screen */
+.tri-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;overflow:hidden}
 .tri-stage::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;background:
-  radial-gradient(125% 80% at 50% 38%, transparent 54%, rgba(3,7,14,.55) 100%),
-  radial-gradient(24% 18% at 50% 4%, rgba(234,196,104,.22), transparent 68%),
-  radial-gradient(48% 46% at 18% 44%, rgba(80,140,255,.13), transparent 70%),
-  radial-gradient(48% 46% at 82% 44%, rgba(45,220,135,.11), transparent 70%);
+  radial-gradient(56% 46% at 24% 27%, rgba(80,140,255,.13), transparent 72%),
+  radial-gradient(56% 46% at 76% 27%, rgba(45,220,135,.12), transparent 72%),
+  radial-gradient(50% 46% at 50% 75%, rgba(165,110,255,.14), transparent 72%),
+  radial-gradient(22% 16% at 50% 20%, rgba(234,196,104,.15), transparent 70%),
+  radial-gradient(135% 92% at 50% 46%, transparent 50%, rgba(3,7,14,.62) 100%);
   animation:auraPulse 6.5s ease-in-out infinite}
-@keyframes auraPulse{0%,100%{opacity:.7}50%{opacity:1}}
-/* faint diagonal light rays that fill the empty corners */
-.tri-rays{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;animation:auraPulse 7.5s ease-in-out infinite}
-.tri-rays line{vector-effect:non-scaling-stroke}
-/* subtle, thin grounding glow under the base — dim & neutral, not a purple pool */
-.tri-floor{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);width:70%;height:5%;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 55% 100% at 50% 0%, rgba(150,160,200,.12), transparent 72%);
-  filter:blur(3px);animation:auraPulse 7s ease-in-out infinite}
-.tri-wrap{position:absolute;inset:0;z-index:1;
-  -webkit-box-reflect:below -8px linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,.14) 20%, rgba(255,255,255,0) 55%)}
-.tri-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;transform-origin:50% 58%;animation:triBreathe 5.5s ease-in-out infinite}
-@keyframes triBreathe{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.012)}}
-@media (prefers-reduced-motion:reduce){.tri-svg{animation:none}}
-.tri-region{transition:fill .2s ease;cursor:pointer;outline:none}
-.r-eval{fill:rgba(80,140,255,.05)} .r-eval:hover,.r-eval:focus-visible{fill:rgba(80,140,255,.15)}
-.r-bench{fill:rgba(45,220,135,.045)} .r-bench:hover,.r-bench:focus-visible{fill:rgba(45,220,135,.14)}
-.r-train{fill:rgba(165,110,255,.05)} .r-train:hover,.r-train:focus-visible{fill:rgba(165,110,255,.15)}
-.tri-side{fill:none;stroke-width:2.5;stroke-linecap:round;vector-effect:non-scaling-stroke;pointer-events:none}
-.s-eval{stroke:#6BA0FF;filter:drop-shadow(0 0 3px #6BA0FF) drop-shadow(0 0 10px rgba(107,160,255,.7))}
-.s-bench{stroke:#45E0A0;filter:drop-shadow(0 0 3px #45E0A0) drop-shadow(0 0 10px rgba(69,224,160,.7))}
-.s-train{stroke:#C9A0FF;stroke-width:3;filter:drop-shadow(0 0 4px #C29CFF) drop-shadow(0 0 14px rgba(194,156,255,.85))}
-.tri-label{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;width:22%;max-width:132px;pointer-events:none;z-index:2}
-.l-eval{left:37.5%;top:52%;--ac:#6BA0FF;--glow:rgba(80,140,255,.5);--badge-bg:rgba(48,96,210,.34)}
-.l-bench{left:62.5%;top:52%;--ac:#45E0A0;--glow:rgba(45,220,135,.46);--badge-bg:rgba(22,130,82,.34)}
-.l-train{left:50%;top:86%;--ac:#C29CFF;--glow:rgba(165,110,255,.5);--badge-bg:rgba(95,52,185,.34)}
-.tri-badge{width:clamp(40px,9.5vw,50px);height:clamp(40px,9.5vw,50px);border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--ac);background:var(--badge-bg);box-shadow:0 0 20px var(--glow), inset 0 0 14px var(--glow);animation:triPulse 3.4s ease-in-out infinite}
+@keyframes auraPulse{0%,100%{opacity:.75}50%{opacity:1}}
+.tri-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+/* interior glow that radiates from each icon, filling the triangle */
+.tri-fill{pointer-events:none;animation:fillPulse 5.5s ease-in-out infinite}
+.f-eval{fill:url(#gEval)} .f-bench{fill:url(#gBench)} .f-train{fill:url(#gTrain)}
+@keyframes fillPulse{0%,100%{opacity:.48}50%{opacity:1}}
+/* one faint nested triangle for a sharp, technical structure */
+.tri-inner{fill:none;stroke-width:1;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none;opacity:.2;animation:triBreathe 5.5s ease-in-out infinite}
+.i-eval{stroke:#6BA0FF} .i-bench{stroke:#45E0A0} .i-train{stroke:#C9A0FF}
+.tri-region{transition:fill .2s ease;cursor:pointer;outline:none;fill:transparent;pointer-events:all}
+.r-eval:hover,.r-eval:focus-visible{fill:rgba(80,140,255,.14)}
+.r-bench:hover,.r-bench:focus-visible{fill:rgba(45,220,135,.13)}
+.r-train:hover,.r-train:focus-visible{fill:rgba(165,110,255,.14)}
+.tri-out{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;pointer-events:none;animation:triBreathe 5.5s ease-in-out infinite}
+@keyframes triBreathe{0%,100%{opacity:.6}50%{opacity:1}}
+.o-eval{stroke:#6BA0FF;filter:drop-shadow(0 0 3px #6BA0FF) drop-shadow(0 0 11px rgba(107,160,255,.75))}
+.o-bench{stroke:#45E0A0;filter:drop-shadow(0 0 3px #45E0A0) drop-shadow(0 0 11px rgba(69,224,160,.75));animation-delay:.5s}
+.o-train{stroke:#C9A0FF;filter:drop-shadow(0 0 4px #C29CFF) drop-shadow(0 0 13px rgba(194,156,255,.8));animation-delay:1s}
+@media (prefers-reduced-motion:reduce){.tri-out,.tri-stage::before{animation:none}}
+.tri-node{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;width:30%;max-width:168px;pointer-events:none;z-index:2}
+.n-eval{left:23.7%;top:27%;--ac:#6BA0FF;--glow:rgba(80,140,255,.5);--badge-bg:rgba(48,96,210,.32)}
+.n-bench{left:76.3%;top:27%;--ac:#45E0A0;--glow:rgba(45,220,135,.46);--badge-bg:rgba(22,130,82,.32)}
+.n-train{left:50%;top:76%;--ac:#C29CFF;--glow:rgba(165,110,255,.5);--badge-bg:rgba(95,52,185,.32)}
+.tri-badge{width:clamp(38px,8vw,52px);height:clamp(38px,8vw,52px);border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--ac);background:var(--badge-bg);box-shadow:0 0 20px var(--glow), inset 0 0 14px var(--glow);animation:triPulse 3.4s ease-in-out infinite}
 .tri-badge svg{width:46%;height:46%}
-.l-eval .tri-badge{animation-delay:0s}
-.l-bench .tri-badge{animation-delay:.6s}
-.l-train .tri-badge{animation-delay:1.2s}
-@keyframes triPulse{0%,100%{box-shadow:0 0 14px -2px var(--glow), inset 0 0 12px var(--glow)}50%{box-shadow:0 0 30px 3px var(--glow), inset 0 0 14px var(--glow)}}
+.n-eval .tri-badge{animation-delay:0s}
+.n-bench .tri-badge{animation-delay:.6s}
+.n-train .tri-badge{animation-delay:1.2s}
+@keyframes triPulse{0%,100%{box-shadow:0 0 14px -2px var(--glow), inset 0 0 12px var(--glow)}50%{box-shadow:0 0 28px 3px var(--glow), inset 0 0 14px var(--glow)}}
 @media (prefers-reduced-motion:reduce){.tri-badge{animation:none}}
-.tri-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(11px,2.7vw,15px);font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#fff;line-height:1.02;text-shadow:0 2px 10px rgba(0,0,0,.7)}
-.tri-sub{font-family:'Barlow Condensed',sans-serif;font-size:clamp(8px,2vw,10px);font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--ac);text-shadow:0 0 14px var(--glow)}
-.tri-core{position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);width:clamp(42px,10vw,52px);aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 34%, #1b2942, #0b1120);border:1px solid rgba(201,162,39,.6);pointer-events:none;z-index:3;animation:coreGlow 5.5s ease-in-out infinite}
+.tri-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(12px,2.6vw,17px);font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff;line-height:1.02;text-shadow:0 2px 10px rgba(0,0,0,.7)}
+.tri-sub{font-family:'Barlow Condensed',sans-serif;font-size:clamp(8px,1.8vw,11px);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--ac);text-shadow:0 0 14px var(--glow)}
+.tri-chev{color:var(--ac);opacity:.8;filter:drop-shadow(0 0 6px var(--glow));animation:chevPulse 3.2s ease-in-out infinite}
+.tri-chev svg{width:clamp(13px,2.1vw,17px);height:auto;display:block}
+@keyframes chevPulse{0%,100%{opacity:.45;transform:translateX(0)}50%{opacity:.9;transform:translateX(3px)}}
+@media (prefers-reduced-motion:reduce){.tri-chev{animation:none}}
+.tri-core{position:absolute;left:50%;top:15%;transform:translate(-50%,-50%);width:clamp(30px,6.5vw,44px);aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 34%, #1b2942, #0b1120);border:1px solid rgba(201,162,39,.6);pointer-events:none;z-index:3;animation:coreGlow 5.5s ease-in-out infinite}
 @keyframes coreGlow{0%,100%{box-shadow:0 0 16px rgba(201,162,39,.16), inset 0 0 14px rgba(0,0,0,.6)}50%{box-shadow:0 0 30px rgba(201,162,39,.34), inset 0 0 14px rgba(0,0,0,.6)}}
 @media (prefers-reduced-motion:reduce){.tri-core{animation:none}}
 .tri-core img{width:56%;height:56%;object-fit:contain}
+.tri-dots{position:absolute;left:50%;top:8%;transform:translateX(-50%);display:flex;gap:5px;z-index:1;pointer-events:none}
+.tri-dots span{width:4px;height:4px;border-radius:50%;background:var(--text3);opacity:.7}
 .home-quote-wrap{container-type:inline-size;margin-top:6px;padding:12px 6px 6px;text-align:center}
 .home-quote{display:inline-block;max-width:100%;font-family:'Barlow',sans-serif;font-style:italic;line-height:1.4;letter-spacing:0.3px;color:var(--text2);white-space:nowrap;font-size:clamp(9px,2.6cqw,13px)}
 .home-quote .q-mark{color:var(--forge-gold);font-style:normal;font-family:Georgia,'Times New Roman',serif;font-size:1.5em;font-weight:700;vertical-align:-0.28em;opacity:.95;margin:0 3px}
@@ -414,43 +419,54 @@ firebase.auth().onAuthStateChanged(user => {
   </div>
   <div class="home-body">
     <div class="tri-stage">
-      <svg class="tri-rays" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <!-- light beams fanning out of the apex into the top corners -->
-        <line x1="50" y1="3" x2="1"  y2="2"  stroke="#6BA0FF" stroke-width="1" opacity=".16"/>
-        <line x1="50" y1="3" x2="1"  y2="24" stroke="#6BA0FF" stroke-width="1" opacity=".12"/>
-        <line x1="50" y1="3" x2="3"  y2="52" stroke="#6BA0FF" stroke-width="1" opacity=".08"/>
-        <line x1="50" y1="3" x2="15" y2="82" stroke="#6BA0FF" stroke-width="1" opacity=".05"/>
-        <line x1="50" y1="3" x2="99" y2="2"  stroke="#45E0A0" stroke-width="1" opacity=".16"/>
-        <line x1="50" y1="3" x2="99" y2="24" stroke="#45E0A0" stroke-width="1" opacity=".12"/>
-        <line x1="50" y1="3" x2="97" y2="52" stroke="#45E0A0" stroke-width="1" opacity=".08"/>
-        <line x1="50" y1="3" x2="85" y2="82" stroke="#45E0A0" stroke-width="1" opacity=".05"/>
+      <svg class="tri-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+          <radialGradient id="gEval" cx="50%" cy="36%" r="70%">
+            <stop offset="0%" stop-color="#6BA0FF" stop-opacity=".26"/><stop offset="52%" stop-color="#6BA0FF" stop-opacity=".09"/><stop offset="100%" stop-color="#6BA0FF" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="gBench" cx="50%" cy="36%" r="70%">
+            <stop offset="0%" stop-color="#45E0A0" stop-opacity=".24"/><stop offset="52%" stop-color="#45E0A0" stop-opacity=".08"/><stop offset="100%" stop-color="#45E0A0" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="gTrain" cx="50%" cy="45%" r="66%">
+            <stop offset="0%" stop-color="#C9A0FF" stop-opacity=".24"/><stop offset="52%" stop-color="#C9A0FF" stop-opacity=".08"/><stop offset="100%" stop-color="#C9A0FF" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- interior glow fills -->
+        <polygon class="tri-fill f-eval"  points="0,3 47,3 24,68"></polygon>
+        <polygon class="tri-fill f-bench" points="53,3 100,3 76,68"></polygon>
+        <polygon class="tri-fill f-train" points="50,25 19,95 81,95"></polygon>
+        <!-- click regions -->
+        <polygon class="tri-region r-eval"  points="0,3 47,3 24,68"    onclick="nav('evaluation')" role="button" tabindex="0" aria-label="Evaluation"></polygon>
+        <polygon class="tri-region r-bench" points="53,3 100,3 76,68"  onclick="nav('benchmarks')" role="button" tabindex="0" aria-label="Benchmarks"></polygon>
+        <polygon class="tri-region r-train" points="50,25 19,95 81,95"  onclick="nav('videos')" role="button" tabindex="0" aria-label="Training Modules"></polygon>
+        <!-- faint nested triangles -->
+        <polygon class="tri-inner i-eval"  points="7.1,9.5 40,9.5 23.9,55"></polygon>
+        <polygon class="tri-inner i-bench" points="60,9.5 92.9,9.5 76.1,55"></polygon>
+        <polygon class="tri-inner i-train" points="50,39 28.3,88 71.7,88"></polygon>
+        <!-- neon outlines -->
+        <polygon class="tri-out o-eval"  points="0,3 47,3 24,68"></polygon>
+        <polygon class="tri-out o-bench" points="53,3 100,3 76,68"></polygon>
+        <polygon class="tri-out o-train" points="50,25 19,95 81,95"></polygon>
       </svg>
-      <div class="tri-floor"></div>
-      <div class="tri-wrap">
-        <svg class="tri-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <polygon class="tri-region r-eval"  points="50,2 1,95 50,62"  onclick="nav('evaluation')" role="button" tabindex="0" aria-label="Evaluation"></polygon>
-          <polygon class="tri-region r-bench" points="50,2 99,95 50,62"  onclick="nav('benchmarks')" role="button" tabindex="0" aria-label="Benchmarks"></polygon>
-          <polygon class="tri-region r-train" points="1,95 99,95 50,62"   onclick="nav('videos')" role="button" tabindex="0" aria-label="Training Modules"></polygon>
-          <line class="tri-side s-eval"  x1="50" y1="2" x2="1"  y2="95"></line>
-          <line class="tri-side s-bench" x1="50" y1="2" x2="99" y2="95"></line>
-          <line class="tri-side s-train" x1="1"  y1="95" x2="99" y2="95"></line>
-        </svg>
-        <div class="tri-label l-eval">
-          <span class="tri-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="7" y="5" width="18" height="24" rx="3" stroke="white" stroke-width="2"/><rect x="11" y="3" width="10" height="5" rx="1.5" fill="white"/><path d="M11 17.5l3.4 3.4L22 13.2" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          <span class="tri-title">Evaluation</span>
-          <span class="tri-sub">(Subjective)</span>
-        </div>
-        <div class="tri-label l-bench">
-          <span class="tri-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="4" y="17" width="6" height="11" rx="1.5" fill="white"/><rect x="13" y="10" width="6" height="18" rx="1.5" fill="white"/><rect x="22" y="4" width="6" height="24" rx="1.5" fill="white"/></svg></span>
-          <span class="tri-title">Benchmarks</span>
-          <span class="tri-sub">(Objective)</span>
-        </div>
-        <div class="tri-label l-train">
-          <span class="tri-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="17" rx="3" stroke="white" stroke-width="2"/><path d="M13.5 11l6.5 3.5-6.5 3.5V11z" fill="white"/><path d="M11 27h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span>
-          <span class="tri-title">Training Modules</span>
-          <span class="tri-sub">(Videos)</span>
-        </div>
-        <div class="tri-core"><img src="icons/forge-logo-gold.png" alt="Forge"></div>
+      <div class="tri-dots"><span></span><span></span><span></span></div>
+      <div class="tri-core"><img src="icons/forge-logo-gold.png" alt="Forge"></div>
+      <div class="tri-node n-eval">
+        <span class="tri-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="7" y="5" width="18" height="24" rx="3" stroke="white" stroke-width="2"/><rect x="11" y="3" width="10" height="5" rx="1.5" fill="white"/><path d="M11 17.5l3.4 3.4L22 13.2" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="tri-title">Evaluation</span>
+        <span class="tri-sub">(Subjective)</span>
+        <span class="tri-chev"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="tri-node n-bench">
+        <span class="tri-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="4" y="17" width="6" height="11" rx="1.5" fill="white"/><rect x="13" y="10" width="6" height="18" rx="1.5" fill="white"/><rect x="22" y="4" width="6" height="24" rx="1.5" fill="white"/></svg></span>
+        <span class="tri-title">Benchmarks</span>
+        <span class="tri-sub">(Objective)</span>
+        <span class="tri-chev"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="tri-node n-train">
+        <span class="tri-badge"><svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="17" rx="3" stroke="white" stroke-width="2"/><path d="M13.5 11l6.5 3.5-6.5 3.5V11z" fill="white"/><path d="M11 27h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <span class="tri-title">Training Modules</span>
+        <span class="tri-sub">(Videos)</span>
+        <span class="tri-chev"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       </div>
     </div>
     <div class="home-quote-wrap">
