@@ -71,6 +71,16 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .coach-badge{background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:4px;text-transform:uppercase}
 .rs-btn{width:34px;height:34px;border-radius:50%;background:transparent;border:1.5px solid var(--accent);color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,color .15s}
 .rs-btn:hover{background:var(--accent);color:var(--on-accent)}
+/* Coach/admin in-app editing */
+.edit-btn{background:var(--accent);color:var(--on-accent);border:none;border-radius:8px;padding:7px 14px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;flex-shrink:0;transition:filter .15s}
+.edit-btn:hover{filter:brightness(1.08)}
+.edit-banner{display:flex;align-items:center;gap:6px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.35);color:var(--accent);border-radius:8px;padding:9px 12px;margin-bottom:14px;font-size:12.5px;font-weight:600}
+.mrow .edit-inp{width:96px;background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;text-align:right;outline:none;transition:border-color .15s}
+.mrow .edit-inp:focus{border-color:var(--accent)}
+.edit-actions{display:flex;gap:10px;margin-top:16px}
+.edit-actions .btn-primary,.edit-actions .btn-secondary{margin-top:0;flex:1}
+.btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:10px;padding:14px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:border-color .2s,color .2s}
+.btn-secondary:hover{border-color:var(--text2);color:var(--text)}
 
 /* HOME */
 .home-body{padding:12px;flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;min-height:0}
@@ -605,6 +615,28 @@ firebase.auth().onAuthStateChanged(user => {
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0bYsFFDeT8FCxMOwrr1fdhbrGxfBnJrxGI3Kb38JeBPWhG_2cO4UF_dPpuCdUsKXr/exec';
 
+// ── Coach/admin in-app editing config ──────────────────────────
+// Sheet writes go to the Apps Script via POST and are authorized by the
+// signed-in user's Firebase ID token, which the Apps Script verifies
+// server-side (see setup docs) — no secret is stored in this public source.
+// Google Sheet tab name for each editable category.
+const SHEET_TABS = {
+  benchmarks: 'Benchmarks (Matrix)',
+  evaluation: 'Evaluation (Matrix)',
+  values:     'Values',
+  feedback:   'Pivotal Feedback',
+  player:     'Players'
+};
+// Map app field-keys to their exact Sheet column headers, only where they differ
+// (benchmarks / evaluation / values use the header as the key directly).
+const FIELD_HEADERS = {
+  feedback: { great: 'One Great Thing', improve: 'One To Improve' },
+  player:   { name: 'Player Name', team: 'Team', num: 'Player Number', active: 'Active' }
+};
+function sheetHeader(cat, dbKey) {
+  return (FIELD_HEADERS[cat] && FIELD_HEADERS[cat][dbKey]) || dbKey;
+}
+
 // ── Read setup/reset token immediately on page load ────────────
 (function() {
   const params = new URLSearchParams(window.location.search);
@@ -780,6 +812,7 @@ function applyRaw(raw) {
   DB.fundamental = processBehaviorSheet(raw['Fundamental Behaviors'] || []);
   DB.skillbeh   = processBehaviorSheet(raw['Skill Behaviors'] || []);
   processUsers(raw['Users'] || []);
+  if (_editsOverlay) applyEdits(); // re-layer coach/admin edits over fresh sheet data
 }
 
 async function loadData() {
@@ -898,6 +931,113 @@ async function maybeSnapshot(category, playerNum, currentValues) {
     return forCat; // couldn't persist — show existing history, don't fabricate
   }
   return [newEntry, ...forCat];
+}
+
+// ── Coach/admin edits (Firestore overlay + Sheet mirror) ────────
+// Every edit is written to Firestore `edits` (instant + authoritative for the
+// app) AND mirrored to the Google Sheet. On load we layer the overlay onto the
+// sheet-sourced DB with a newest-wins rule (using each field's recorded `prev`
+// sheet value) so hand-edits to the Sheet and in-app edits both stay correct.
+const EDIT_CATS = { benchmarks:()=>DB.benchmarks, evaluation:()=>DB.evaluation, values:()=>DB.values, feedback:()=>DB.feedback };
+let _editsOverlay = null; // { `cat__num`: {category,num,fields:{key:{value,prev,ts}}} }
+
+function isStaff(){ return !!currentUser && (currentUser.role==='coach' || currentUser.role==='admin'); }
+
+async function fetchEditsOverlay() {
+  try {
+    const snap = await window._db.collection('edits').get();
+    const o = {}; snap.docs.forEach(d => o[d.id] = d.data());
+    _editsOverlay = o;
+  } catch(e) { console.warn('edits overlay load failed', e); if (!_editsOverlay) _editsOverlay = {}; }
+}
+
+// Normalize for comparison: numeric strings → numbers, blanks → null, else raw.
+const _norm = v => (v==null || v==='') ? null : (isNaN(parseFloat(v)) ? v : parseFloat(v));
+
+function recomputeAvg(cat, rec) {
+  let keys = null;
+  if (cat==='evaluation') keys = EVAL_KEYS;
+  else if (cat==='values') keys = ['Respectful','Industrious','Student','Enduring','United','Passionate'];
+  if (!keys) return;
+  const vals = keys.map(k=>rec[k]).filter(v=>v!=null);
+  if (vals.length) rec.Average = parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2));
+  else delete rec.Average;
+}
+
+function applyEditDoc(cat, num, doc) {
+  const getArr = EDIT_CATS[cat];
+  if (!getArr) return; // player/roster handled separately (later phase)
+  const arr = getArr(); if (!arr) return;
+  let rec = arr.find(r=>r.num===num); if (!rec) { rec={num}; arr.push(rec); }
+  const fields = doc.fields || {};
+  Object.entries(fields).forEach(([k,meta])=>{
+    if (!meta) return;
+    const sv=_norm(rec[k]), ov=_norm(meta.value), pv=_norm(meta.prev);
+    if (sv===ov) return;                 // Sheet already caught up to this edit
+    if (sv===pv || sv==null) {           // Sheet hasn't caught up → app edit is newer
+      if (ov==null) delete rec[k]; else rec[k]=ov;
+    }                                     // else Sheet was hand-edited after → Sheet wins
+  });
+  recomputeAvg(cat, rec);
+}
+
+function applyEdits() {
+  if (!_editsOverlay) return;
+  Object.entries(_editsOverlay).forEach(([id,doc])=>{
+    const i = id.indexOf('__'); if (i<0) return;
+    const cat = id.slice(0,i), num = parseInt(id.slice(i+2));
+    if (!isNaN(num)) applyEditDoc(cat, num, doc);
+  });
+}
+
+// Persist a set of field changes: optimistic DB update → Firestore → Sheet mirror.
+// `changed` is { dbKey: newValue } (newValue null clears the field).
+async function saveEdits(cat, num, changed) {
+  const getArr = EDIT_CATS[cat];
+  let rec = null;
+  if (getArr) { const arr=getArr(); rec = arr.find(r=>r.num===num); if(!rec){ rec={num}; arr.push(rec); } }
+  const fieldsDoc = {}, sheetData = {}, ts = Date.now();
+  Object.entries(changed).forEach(([k,v])=>{
+    const prev = (rec && rec[k]!=null) ? rec[k] : null;
+    fieldsDoc[k] = { value:(v===undefined?null:v), prev, ts };
+    if (rec) { if (v==null) delete rec[k]; else rec[k]=v; }   // optimistic
+    sheetData[sheetHeader(cat,k)] = (v==null ? '' : v);
+  });
+  if (rec) recomputeAvg(cat, rec);
+  // Update local overlay cache so re-renders before the next fetch stay correct.
+  _editsOverlay = _editsOverlay || {};
+  const id = cat+'__'+num;
+  _editsOverlay[id] = _editsOverlay[id] || { category:cat, num, fields:{} };
+  _editsOverlay[id].fields = Object.assign(_editsOverlay[id].fields||{}, fieldsDoc);
+  // Authoritative write to Firestore (deep-merges the fields map).
+  await window._db.collection('edits').doc(id).set({
+    category:cat, num,
+    updatedBy: currentUser ? currentUser.username : '',
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    fields: fieldsDoc
+  }, { merge:true });
+  // Mirror to the Sheet in the background (don't block the UI on it).
+  pushToSheet(cat, num, sheetData);
+}
+
+// Mirror a write to the Google Sheet via the Apps Script. Uses POST with a
+// text/plain body (a "simple" request, so no CORS preflight) carrying the
+// user's Firebase ID token, which the Apps Script verifies before writing.
+async function sheetWrite(payload) {
+  let idToken = '';
+  try { const u = firebase.auth().currentUser; if (u) idToken = await u.getIdToken(); } catch(e){}
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ ...payload, idToken })
+    });
+    const out = await res.json().catch(() => null);
+    if (!out || out.ok === false) console.warn('Sheet write not ok:', out);
+    return out;
+  } catch(e) { console.warn('Sheet write failed (still correct in-app):', e); return null; }
+}
+function pushToSheet(cat, num, data) {
+  return sheetWrite({ action:'updateCells', sheet: SHEET_TABS[cat], num, data });
 }
 
 function processUsers(rows) {
@@ -1354,6 +1494,8 @@ function loginSuccess(userKey) {
   document.getElementById('role-badge').innerHTML = isStaff
     ? '<span class="coach-badge">' + (currentUser.role === 'admin' ? 'Admin' : 'Coach') + '</span>' : '';
   show('home');
+  // Pull the coach/admin edits overlay, then re-layer it onto the sheet data.
+  fetchEditsOverlay().then(() => applyEdits());
 }
 
 // ── Data helpers ──────────────────────────────────────────────
@@ -1388,6 +1530,7 @@ function renderList(section) {
 function initials(name) { return name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase(); }
 
 function showDetail(num, fromSection) {
+  if (num !== _editNum || fromSection !== _editSection) _editing = false; // reset edit mode on navigation
   const player = DB.players.find(p => p.num === num) || {num, name:'Player #'+num, team:''};
   const bench  = byNum(DB.benchmarks, num);
   const evalD  = byNum(DB.evaluation, num);
@@ -1396,10 +1539,14 @@ function showDetail(num, fromSection) {
   const val    = byNum(DB.values, num);
   const titles = {benchmarks:'Benchmarks', evaluation:'Evaluation'};
   document.getElementById('detail-hdr').textContent = titles[fromSection] || '#'+num;
-  // Rating-scale shortcut (?) appears only on Evaluation.
-  document.getElementById('detail-hdr-right').innerHTML = (fromSection === 'evaluation')
+  // Header-right: rating-scale (?) on Evaluation; Edit toggle on Benchmarks for staff.
+  let hdrRight = (fromSection === 'evaluation')
     ? '<button type="button" class="rs-btn" onclick="openRatingScale()" title="Rating scale" aria-label="Rating scale">?</button>'
     : '';
+  if (fromSection === 'benchmarks' && isStaff()) {
+    hdrRight = `<button type="button" class="edit-btn" onclick="toggleEdit(${num},'benchmarks')">${_editing ? 'Cancel' : 'Edit'}</button>`;
+  }
+  document.getElementById('detail-hdr-right').innerHTML = hdrRight;
   const backDest = currentUser.role === 'player' ? 'home' : fromSection;
   document.getElementById('detail-back').onclick = () => {
     show(backDest);
@@ -1431,9 +1578,10 @@ function showDetail(num, fromSection) {
       `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
     ).join('');
   } else {
-    // Benchmarks — single view, no tabs (same for players and staff).
+    // Benchmarks — single view, no tabs. Staff can flip into edit mode.
     document.getElementById('detail-tabs').innerHTML = '';
-    document.getElementById('detail-body').innerHTML = phdr + `<div class="tab-content active">${buildBench(bench)}</div>`;
+    const benchBody = (_editing && isStaff()) ? buildBenchEditable(bench) : buildBench(bench);
+    document.getElementById('detail-body').innerHTML = phdr + `<div class="tab-content active">${benchBody}</div>`;
   }
   show('player-detail');
   // Animate bars after screen is visible — covers both player and coach paths
@@ -1488,6 +1636,52 @@ function buildBehaviorSection(data, title, emptyMsg, category) {
   let h = data.Average != null ? `<div class="avg-badge"><span>Average Score</span><strong>${data.Average.toFixed(2)}/10</strong></div>` : '';
   h += `<div class="mg"><h4>${title}</h4>${keys.map(k=>srow(k,data[k])).join('')}</div>`;
   return h + mount;
+}
+
+// ── In-app edit mode (detail view) ─────────────────────────────
+let _editing = false, _editNum = null, _editSection = null;
+function toggleEdit(num, section){ _editNum = num; _editSection = section; _editing = !_editing; showDetail(num, section); }
+function cancelEdit(){ _editing = false; if (_editNum != null) showDetail(_editNum, _editSection || 'benchmarks'); }
+
+const BENCH_GROUPS = [
+  ['Dribble', ['5 m Dribble','10 m Dribble']],
+  ['Figure 8', ['1 m Fig 8','2 m Fig 8','4 m Fig 8']],
+  ['Star', ['1m Star','2m Star','4m Star']],
+  ['Turning', ['2 m Turning','4 m Turning']],
+  ['Other', ['M Test','Futsalnout','First Round','Second Round']]
+];
+
+function buildBenchEditable(b) {
+  const rows = ks => ks.map(k => {
+    const v = b[k] != null ? b[k] : '';
+    return `<div class="mrow"><span class="mname">${k.replace(' m ',' ')}</span>`
+      + `<input class="edit-inp" type="number" step="0.01" inputmode="decimal" data-k="${k}" value="${v}" placeholder="—"></div>`;
+  }).join('');
+  const metrics = BENCH_GROUPS.map(([t,ks]) => `<div class="mg"><h4>${t}</h4>${rows(ks)}</div>`).join('');
+  return `<div class="edit-banner">✎ Editing benchmarks — saves to the app and your Google Sheet.</div>`
+    + metrics
+    + `<div class="edit-actions">`
+    + `<button type="button" class="btn-secondary" onclick="cancelEdit()">Cancel</button>`
+    + `<button type="button" class="btn-primary" id="edit-save-btn" onclick="commitBenchEdit(${b.num})">Save changes</button>`
+    + `</div>`;
+}
+
+function commitBenchEdit(num) {
+  const b = byNum(DB.benchmarks, num);
+  const changed = {};
+  document.querySelectorAll('#detail-body .edit-inp').forEach(inp => {
+    const k = inp.dataset.k, raw = String(inp.value).trim();
+    if (raw !== '' && isNaN(parseFloat(raw))) return; // ignore unparseable input
+    const v = raw === '' ? null : parseFloat(raw);
+    const cur = b[k] != null ? b[k] : null;
+    if (v !== cur) changed[k] = v;
+  });
+  if (!Object.keys(changed).length) { _editing = false; showDetail(num, 'benchmarks'); return; }
+  const btn = document.getElementById('edit-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  saveEdits('benchmarks', num, changed)
+    .then(() => { _editing = false; showDetail(num, 'benchmarks'); })
+    .catch(e => { if (btn) { btn.disabled = false; btn.textContent = 'Save changes'; } alert('Could not save: ' + (e.message || e)); });
 }
 
 function buildBench(b) {
