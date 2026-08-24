@@ -1,0 +1,21 @@
+// Forge Performance — Firestore rules additions for in-app editing
+// ---------------------------------------------------------------------
+// Add the two match blocks below INSIDE your existing
+//   service cloud.firestore { match /databases/{database}/documents { ... } }
+// block, alongside your existing rules for self-eval / self-feedback / history.
+// Do NOT delete your existing rules — just add these.
+
+    // Coach/admin edits overlay — everyone signed in can READ (so applied
+    // edits show for players too); only staff (listed in /staff) can WRITE.
+    match /edits/{docId} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null
+                   && exists(/databases/$(database)/documents/staff/$(request.auth.token.email));
+    }
+
+    // Staff allowlist. Readable by signed-in users; only editable from the
+    // Firebase console (never from the app) so it can't be tampered with.
+    match /staff/{email} {
+      allow read:  if request.auth != null;
+      allow write: if false;
+    }
