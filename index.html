@@ -77,7 +77,19 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .edit-banner{display:flex;align-items:center;gap:6px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.35);color:var(--accent);border-radius:8px;padding:9px 12px;margin-bottom:14px;font-size:12.5px;font-weight:600}
 .mrow .edit-inp{width:96px;background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;text-align:right;outline:none;transition:border-color .15s}
 .mrow .edit-inp:focus{border-color:var(--accent)}
+.mrow .edit-inp-sm{width:70px}
+.edit-ta{width:100%;min-height:78px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;line-height:1.5;resize:vertical;outline:none;transition:border-color .15s}
+.edit-ta:focus{border-color:var(--accent)}
 .edit-actions{display:flex;gap:10px;margin-top:16px}
+.edit-actions-sticky{position:sticky;bottom:0;background:linear-gradient(to top,var(--bg) 68%,transparent);padding:14px 0 6px;z-index:5}
+.player-hdr-edit .p-meta{display:flex;flex-direction:column;gap:6px}
+.edit-inp-name,.edit-inp-team{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Barlow',sans-serif;outline:none;transition:border-color .15s}
+.edit-inp-name:focus,.edit-inp-team:focus{border-color:var(--accent)}
+.edit-inp-name{font-size:16px;font-weight:600}
+.edit-inp-team{font-size:13px;color:var(--text2)}
+.hide-row{margin:0 0 14px}
+.btn-hide{width:100%;background:transparent;border:1px solid rgba(198,84,79,.5);color:var(--red);border-radius:8px;padding:10px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:background .15s}
+.btn-hide:hover{background:rgba(198,84,79,.12)}
 .edit-actions .btn-primary,.edit-actions .btn-secondary{margin-top:0;flex:1}
 .btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:10px;padding:14px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:border-color .2s,color .2s}
 .btn-secondary:hover{border-color:var(--text2);color:var(--text)}
@@ -633,7 +645,11 @@ const FIELD_HEADERS = {
   feedback: { great: 'One Great Thing', improve: 'One To Improve' },
   player:   { name: 'Player Name', team: 'Team', num: 'Player Number', active: 'Active' }
 };
+// The Pivotal Feedback sheet's column names vary, so processFeedback records the
+// actual resolved headers here and we prefer them when writing back.
+let FB_META = null; // { great: <header>, improve: <header> }
 function sheetHeader(cat, dbKey) {
+  if (cat === 'feedback' && FB_META && FB_META[dbKey]) return FB_META[dbKey];
   return (FIELD_HEADERS[cat] && FIELD_HEADERS[cat][dbKey]) || dbKey;
 }
 
@@ -674,7 +690,8 @@ let dataReady = null; // promise, set at boot — awaited by any action that nee
 function processPlayers(rows) {
   return rows
     .filter(r => r['Player Number'] && r['Player Name'])
-    .map(r => ({num: parseInt(r['Player Number']), name: String(r['Player Name']), team: String(r['Team'] || '')}));
+    .map(r => ({num: parseInt(r['Player Number']), name: String(r['Player Name']), team: String(r['Team'] || ''),
+                active: !(String(r['Active']).toLowerCase()==='false' || r['Active']===false)}));
 }
 
 function processBenchmarks(rows) {
@@ -730,6 +747,8 @@ function processFeedback(rows, players) {
   const improveCol = find(['one to improve','to improve','improve','improvement','one thing to improve']);
 
   if (!greatCol && !improveCol) return [];
+  // Remember the real column headers so in-app edits write to the right columns.
+  FB_META = { great: greatCol || 'One Great Thing', improve: improveCol || 'One To Improve' };
 
   const skip = ['write feedback','n/a','none','','0','null','undefined','-'];
 
@@ -964,18 +983,27 @@ function recomputeAvg(cat, rec) {
   else delete rec.Average;
 }
 
-function applyEditDoc(cat, num, doc) {
-  const getArr = EDIT_CATS[cat];
-  if (!getArr) return; // player/roster handled separately (later phase)
-  const arr = getArr(); if (!arr) return;
+// Get the DB record for a category (players are looked up, not created).
+function recForCat(cat, num) {
+  if (cat === 'player') return DB.players.find(p=>p.num===num) || null;
+  const getArr = EDIT_CATS[cat]; if (!getArr) return null;
+  const arr = getArr(); if (!arr) return null;
   let rec = arr.find(r=>r.num===num); if (!rec) { rec={num}; arr.push(rec); }
+  return rec;
+}
+
+function setActiveFlag(rec, v) { rec.active = !(v===false || String(v).toLowerCase()==='false'); }
+
+function applyEditDoc(cat, num, doc) {
+  const rec = recForCat(cat, num); if (!rec) return;
   const fields = doc.fields || {};
   Object.entries(fields).forEach(([k,meta])=>{
     if (!meta) return;
+    if (cat==='player' && k==='active') { setActiveFlag(rec, meta.value); return; }
     const sv=_norm(rec[k]), ov=_norm(meta.value), pv=_norm(meta.prev);
     if (sv===ov) return;                 // Sheet already caught up to this edit
     if (sv===pv || sv==null) {           // Sheet hasn't caught up → app edit is newer
-      if (ov==null) delete rec[k]; else rec[k]=ov;
+      if (ov==null) { if (cat==='player') rec[k]=''; else delete rec[k]; } else rec[k]=ov;
     }                                     // else Sheet was hand-edited after → Sheet wins
   });
   recomputeAvg(cat, rec);
@@ -993,14 +1021,16 @@ function applyEdits() {
 // Persist a set of field changes: optimistic DB update → Firestore → Sheet mirror.
 // `changed` is { dbKey: newValue } (newValue null clears the field).
 async function saveEdits(cat, num, changed) {
-  const getArr = EDIT_CATS[cat];
-  let rec = null;
-  if (getArr) { const arr=getArr(); rec = arr.find(r=>r.num===num); if(!rec){ rec={num}; arr.push(rec); } }
+  const rec = recForCat(cat, num);
   const fieldsDoc = {}, sheetData = {}, ts = Date.now();
   Object.entries(changed).forEach(([k,v])=>{
     const prev = (rec && rec[k]!=null) ? rec[k] : null;
     fieldsDoc[k] = { value:(v===undefined?null:v), prev, ts };
-    if (rec) { if (v==null) delete rec[k]; else rec[k]=v; }   // optimistic
+    if (rec) {                                                // optimistic
+      if (cat==='player' && k==='active') setActiveFlag(rec, v);
+      else if (v==null) { if (cat==='player') rec[k]=''; else delete rec[k]; }
+      else rec[k]=v;
+    }
     sheetData[sheetHeader(cat,k)] = (v==null ? '' : v);
   });
   if (rec) recomputeAvg(cat, rec);
@@ -1037,7 +1067,8 @@ async function sheetWrite(payload) {
   } catch(e) { console.warn('Sheet write failed (still correct in-app):', e); return null; }
 }
 function pushToSheet(cat, num, data) {
-  return sheetWrite({ action:'updateCells', sheet: SHEET_TABS[cat], num, data });
+  const p = DB.players.find(x=>x.num===num);
+  return sheetWrite({ action:'updateCells', sheet: SHEET_TABS[cat], num, name: p ? p.name : '', data });
 }
 
 function processUsers(rows) {
@@ -1500,9 +1531,10 @@ function loginSuccess(userKey) {
 
 // ── Data helpers ──────────────────────────────────────────────
 function getPlayers() {
-  return currentUser.role === 'player'
+  const base = currentUser.role === 'player'
     ? DB.players.filter(p => p.num === currentUser.number)
     : DB.players;
+  return base.filter(p => p.active !== false); // hide soft-deleted players
 }
 
 function byNum(arr, num) { return arr.find(r => r.num === num) || {num}; }
@@ -1539,20 +1571,23 @@ function showDetail(num, fromSection) {
   const val    = byNum(DB.values, num);
   const titles = {benchmarks:'Benchmarks', evaluation:'Evaluation'};
   document.getElementById('detail-hdr').textContent = titles[fromSection] || '#'+num;
-  // Header-right: rating-scale (?) on Evaluation; Edit toggle on Benchmarks for staff.
-  let hdrRight = (fromSection === 'evaluation')
+  // Header-right: Edit toggle (staff, on Benchmarks + Evaluation) and the
+  // rating-scale (?) shortcut on Evaluation.
+  const rsBtn = (fromSection === 'evaluation')
     ? '<button type="button" class="rs-btn" onclick="openRatingScale()" title="Rating scale" aria-label="Rating scale">?</button>'
     : '';
-  if (fromSection === 'benchmarks' && isStaff()) {
-    hdrRight = `<button type="button" class="edit-btn" onclick="toggleEdit(${num},'benchmarks')">${_editing ? 'Cancel' : 'Edit'}</button>`;
-  }
-  document.getElementById('detail-hdr-right').innerHTML = hdrRight;
+  const editBtn = (isStaff() && (fromSection === 'benchmarks' || fromSection === 'evaluation'))
+    ? `<button type="button" class="edit-btn" onclick="toggleEdit(${num},'${fromSection}')">${_editing ? 'Cancel' : 'Edit'}</button>`
+    : '';
+  document.getElementById('detail-hdr-right').innerHTML = editBtn + rsBtn;
   const backDest = currentUser.role === 'player' ? 'home' : fromSection;
   document.getElementById('detail-back').onclick = () => {
     show(backDest);
     if (currentUser.role !== 'player') renderList(fromSection);
   };
   const phdr = `<div class="player-hdr"><div class="p-avatar">${initials(player.name)}</div><div class="p-meta"><h2>${player.name}</h2><p>#${num} · ${player.team}</p></div></div>`;
+  const ed = _editing && isStaff();
+  const phdrHTML = ed ? phdrEditable(player, num) : phdr;
   if (fromSection === 'evaluation') {
     // Tabs: Forge Identity (Mindset + Behaviors + Feedback), then the three
     // evaluation categories, then the player's Self Feedback (editable for
@@ -1564,24 +1599,26 @@ function showDetail(num, fromSection) {
     ).join('');
     const forgeIdentity =
       buildBehaviorSection(fund, 'Behaviors', 'No behaviors data yet.', 'fundamental') +
-      buildVal(val) +
-      buildEvalGroup(evalD, 'Mindset') +
-      buildFb(fb, player);
+      buildVal(val, ed) +
+      buildEvalGroup(evalD, 'Mindset', ed) +
+      buildFb(fb, player, ed);
     const contents = [
       forgeIdentity,
-      buildEvalGroup(evalD, 'Technique'),
-      buildEvalGroup(evalD, 'Tactical'),
-      buildEvalGroup(evalD, 'Physical'),
+      buildEvalGroup(evalD, 'Technique', ed),
+      buildEvalGroup(evalD, 'Tactical', ed),
+      buildEvalGroup(evalD, 'Physical', ed),
       buildSelfFeedbackPanel(num, isPlayer)
     ];
-    document.getElementById('detail-body').innerHTML = phdr + contents.map((c,i) =>
+    const edBanner = ed ? `<div class="edit-banner">✎ Editing — Mindset, Technique, Tactical, Physical, RISE UP & Feedback save to the app and your Sheet.</div>` : '';
+    const saveBar = ed ? `<div class="edit-actions edit-actions-sticky"><button type="button" class="btn-secondary" onclick="cancelEdit()">Cancel</button><button type="button" class="btn-primary" id="edit-save-btn" onclick="commitEdits(${num},'evaluation')">Save changes</button></div>` : '';
+    document.getElementById('detail-body').innerHTML = phdrHTML + edBanner + contents.map((c,i) =>
       `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
-    ).join('');
+    ).join('') + saveBar;
   } else {
     // Benchmarks — single view, no tabs. Staff can flip into edit mode.
     document.getElementById('detail-tabs').innerHTML = '';
-    const benchBody = (_editing && isStaff()) ? buildBenchEditable(bench) : buildBench(bench);
-    document.getElementById('detail-body').innerHTML = phdr + `<div class="tab-content active">${benchBody}</div>`;
+    const benchBody = ed ? buildBenchEditable(bench) : buildBench(bench);
+    document.getElementById('detail-body').innerHTML = phdrHTML + `<div class="tab-content active">${benchBody}</div>`;
   }
   show('player-detail');
   // Animate bars after screen is visible — covers both player and coach paths
@@ -1643,6 +1680,25 @@ let _editing = false, _editNum = null, _editSection = null;
 function toggleEdit(num, section){ _editNum = num; _editSection = section; _editing = !_editing; showDetail(num, section); }
 function cancelEdit(){ _editing = false; if (_editNum != null) showDetail(_editNum, _editSection || 'benchmarks'); }
 
+// Editable player header (name + team) shown in edit mode, plus a Hide control.
+function phdrEditable(player, num) {
+  return `<div class="player-hdr player-hdr-edit">
+      <div class="p-avatar">${initials(player.name)}</div>
+      <div class="p-meta" style="flex:1">
+        <input class="edit-inp edit-inp-name" data-cat="player" data-k="name" value="${escapeHtml(player.name)}" placeholder="Player name">
+        <input class="edit-inp edit-inp-team" data-cat="player" data-k="team" value="${escapeHtml(player.team||'')}" placeholder="Team">
+      </div>
+    </div>
+    <div class="hide-row"><button type="button" class="btn-hide" onclick="hidePlayer(${num})">Hide this player from the app</button></div>`;
+}
+
+function hidePlayer(num) {
+  if (!confirm('Hide this player? They’ll be removed from the app but kept in your Sheet, so you can restore them later.')) return;
+  saveEdits('player', num, { active:false })
+    .then(() => { _editing = false; const s = _editSection || 'benchmarks'; show(s); if (currentUser.role !== 'player') renderList(s); })
+    .catch(e => alert('Could not hide player: ' + (e.message || e)));
+}
+
 const BENCH_GROUPS = [
   ['Dribble', ['5 m Dribble','10 m Dribble']],
   ['Figure 8', ['1 m Fig 8','2 m Fig 8','4 m Fig 8']],
@@ -1655,32 +1711,61 @@ function buildBenchEditable(b) {
   const rows = ks => ks.map(k => {
     const v = b[k] != null ? b[k] : '';
     return `<div class="mrow"><span class="mname">${k.replace(' m ',' ')}</span>`
-      + `<input class="edit-inp" type="number" step="0.01" inputmode="decimal" data-k="${k}" value="${v}" placeholder="—"></div>`;
+      + `<input class="edit-inp" type="number" step="0.01" inputmode="decimal" data-cat="benchmarks" data-k="${k}" value="${v}" placeholder="—"></div>`;
   }).join('');
   const metrics = BENCH_GROUPS.map(([t,ks]) => `<div class="mg"><h4>${t}</h4>${rows(ks)}</div>`).join('');
   return `<div class="edit-banner">✎ Editing benchmarks — saves to the app and your Google Sheet.</div>`
     + metrics
-    + `<div class="edit-actions">`
+    + editActionsBar(b.num, 'benchmarks');
+}
+
+// Shared Save/Cancel bar for any editable detail panel.
+function editActionsBar(num, section) {
+  return `<div class="edit-actions">`
     + `<button type="button" class="btn-secondary" onclick="cancelEdit()">Cancel</button>`
-    + `<button type="button" class="btn-primary" id="edit-save-btn" onclick="commitBenchEdit(${b.num})">Save changes</button>`
+    + `<button type="button" class="btn-primary" id="edit-save-btn" onclick="commitEdits(${num},'${section}')">Save changes</button>`
     + `</div>`;
 }
 
-function commitBenchEdit(num) {
-  const b = byNum(DB.benchmarks, num);
-  const changed = {};
+// Read one editable input's value, typed per category (null = cleared,
+// undefined = invalid/skip).
+function editFieldValue(cat, raw) {
+  if (cat === 'feedback' || cat === 'player') return String(raw); // free text
+  raw = String(raw).trim();
+  if (raw === '') return null;
+  let v = parseFloat(raw);
+  if (isNaN(v)) return undefined;
+  if (cat === 'evaluation' || cat === 'values') v = Math.max(0, Math.min(10, v)); // clamp to 0–10
+  return v;
+}
+function editCurrentVal(cat, num, k) {
+  if (cat === 'player') { const p = DB.players.find(x=>x.num===num); return p && p[k]!=null ? p[k] : null; }
+  const arr = { benchmarks:DB.benchmarks, evaluation:DB.evaluation, values:DB.values, feedback:DB.feedback }[cat];
+  if (!arr) return null;
+  const rec = byNum(arr, num);
+  return rec[k] != null ? rec[k] : null;
+}
+
+// Generic commit: scans every .edit-inp (across all tabs), groups changes by
+// category, and saves each changed category.
+function commitEdits(num, section) {
+  const byCat = {};
   document.querySelectorAll('#detail-body .edit-inp').forEach(inp => {
-    const k = inp.dataset.k, raw = String(inp.value).trim();
-    if (raw !== '' && isNaN(parseFloat(raw))) return; // ignore unparseable input
-    const v = raw === '' ? null : parseFloat(raw);
-    const cur = b[k] != null ? b[k] : null;
-    if (v !== cur) changed[k] = v;
+    const cat = inp.dataset.cat, k = inp.dataset.k;
+    if (!cat || !k) return;
+    const v = editFieldValue(cat, inp.value);
+    if (v === undefined) return; // unparseable — skip
+    const cur = editCurrentVal(cat, num, k);
+    const changedText = (cat === 'feedback') && ((v || '') !== (cur || ''));
+    const changedNum  = (cat !== 'feedback') && (v !== cur);
+    if (changedText || changedNum) (byCat[cat] = byCat[cat] || {})[k] = v;
   });
-  if (!Object.keys(changed).length) { _editing = false; showDetail(num, 'benchmarks'); return; }
+  const cats = Object.keys(byCat);
+  if (!cats.length) { _editing = false; showDetail(num, section); return; }
   const btn = document.getElementById('edit-save-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
-  saveEdits('benchmarks', num, changed)
-    .then(() => { _editing = false; showDetail(num, 'benchmarks'); })
+  Promise.all(cats.map(c => saveEdits(c, num, byCat[c])))
+    .then(() => { _editing = false; showDetail(num, section); })
     .catch(e => { if (btn) { btn.disabled = false; btn.textContent = 'Save changes'; } alert('Could not save: ' + (e.message || e)); });
 }
 
@@ -1772,8 +1857,15 @@ function initBenchCharts() {
 
 // One evaluation category (Mindset / Technique / Tactical / Physical) — used
 // for the per-category tabs in the Evaluation view.
-function buildEvalGroup(e, groupName) {
+function buildEvalGroup(e, groupName, editable) {
   const keys = EVAL_GROUPS[groupName] || [];
+  if (editable) {
+    return `<div class="mg"><h4>${groupName}</h4>` + keys.map(k => {
+      const v = e[k] != null ? e[k] : '';
+      return `<div class="mrow"><span class="mname">${evalLabel(k)}</span>`
+        + `<input class="edit-inp edit-inp-sm" type="number" step="0.5" min="0" max="10" inputmode="decimal" data-cat="evaluation" data-k="${k}" value="${v}" placeholder="—"></div>`;
+    }).join('') + `</div>`;
+  }
   const scored = keys.filter(k => e[k] != null);
   if (!scored.length) return `<div class="no-data">No ${groupName.toLowerCase()} scores recorded yet.</div>`;
   const avg = (scored.reduce((sum,k) => sum + e[k], 0) / scored.length).toFixed(2);
@@ -1813,8 +1905,16 @@ function fbPanel(title, inner) {
   return `<div class="fb-panel"><div class="fb-panel-head">${FB_ICONS.head}<span>${title}</span></div>${inner}</div>`;
 }
 
-function buildFb(fb, player) {
+function buildFb(fb, player, editable) {
   const num = (fb && fb.num) || player.num;
+  if (editable) {
+    const great = escapeHtml((fb && fb.great) || '');
+    const improve = escapeHtml((fb && fb.improve) || '');
+    const box = (k, label, val, ph) => `<div class="mg"><h4>${label}</h4>`
+      + `<textarea class="edit-inp edit-ta" data-cat="feedback" data-k="${k}" placeholder="${ph}">${val}</textarea></div>`;
+    return box('great', 'One Great Thing', great, "What's this player doing well?")
+      + box('improve', 'One to Improve', improve, 'What should this player work on?');
+  }
   const mountId = 'hist-feedback-' + num;
   setTimeout(() => populateHistory('feedback', num, fb || {num}, mountId, 'feedback'), 0);
   const mount = `<div id="${mountId}"></div>`;
@@ -1838,8 +1938,15 @@ function processBehaviorSheet(rows) {
   });
 }
 
-function buildVal(v) {
+function buildVal(v, editable) {
   const keys=['Respectful','Industrious','Student','Enduring','United','Passionate'];
+  if (editable) {
+    return `<div class="mg"><h4>RISE UP</h4>` + keys.map(k => {
+      const val = v[k] != null ? v[k] : '';
+      return `<div class="mrow"><span class="mname">${k}</span>`
+        + `<input class="edit-inp edit-inp-sm" type="number" step="0.5" min="0" max="10" inputmode="decimal" data-cat="values" data-k="${k}" value="${val}" placeholder="—"></div>`;
+    }).join('') + `</div>`;
+  }
   const mountId = 'hist-values-' + v.num;
   setTimeout(() => populateHistory('values', v.num, v, mountId, 'numeric'), 0);
   const mount = `<div id="${mountId}"></div>`;
@@ -2093,9 +2200,11 @@ function addPlayer(){
   const team=document.getElementById('new-team').value;
   if(!num||!name||!team){alert('Please fill in all fields.');return;}
   if(DB.players.find(p=>p.num===num)){alert('Player number already exists.');return;}
-  DB.players.push({num,name,team});
+  DB.players.push({num,name,team,active:true});
   DB.benchmarks.push({num});DB.evaluation.push({num});
   DB.feedback.push({num,great:'',improve:''});DB.values.push({num});
+  // Persist the new player to the Google Sheet (appends a Players row).
+  sheetWrite({ action:'addPlayer', num, name, team });
   closeModal();renderList('benchmarks');
   alert(`${name} (#${num}) added successfully!`);
   setTimeout(() => animateBars(), 20);
