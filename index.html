@@ -90,6 +90,8 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .hide-row{margin:0 0 14px}
 .btn-hide{width:100%;background:transparent;border:1px solid rgba(198,84,79,.5);color:var(--red);border-radius:8px;padding:10px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:background .15s}
 .btn-hide:hover{background:rgba(198,84,79,.12)}
+.btn-delete{width:100%;margin-top:8px;background:rgba(198,84,79,.16);border:1px solid var(--red);color:var(--red);border-radius:8px;padding:10px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:background .15s,color .15s}
+.btn-delete:hover{background:var(--red);color:#fff}
 .edit-actions .btn-primary,.edit-actions .btn-secondary{margin-top:0;flex:1}
 .btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:10px;padding:14px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:border-color .2s,color .2s}
 .btn-secondary:hover{border-color:var(--text2);color:var(--text)}
@@ -1689,7 +1691,10 @@ function phdrEditable(player, num) {
         <input class="edit-inp edit-inp-team" data-cat="player" data-k="team" value="${escapeHtml(player.team||'')}" placeholder="Team">
       </div>
     </div>
-    <div class="hide-row"><button type="button" class="btn-hide" onclick="hidePlayer(${num})">Hide this player from the app</button></div>`;
+    <div class="hide-row">
+      <button type="button" class="btn-hide" onclick="hidePlayer(${num})">Hide this player from the app</button>
+      <button type="button" class="btn-delete" onclick="deletePlayer(${num})">Delete permanently</button>
+    </div>`;
 }
 
 function hidePlayer(num) {
@@ -1697,6 +1702,27 @@ function hidePlayer(num) {
   saveEdits('player', num, { active:false })
     .then(() => { _editing = false; const s = _editSection || 'benchmarks'; show(s); if (currentUser.role !== 'player') renderList(s); })
     .catch(e => alert('Could not hide player: ' + (e.message || e)));
+}
+
+// Permanent delete: removes the player's rows from every Sheet tab and their
+// edit overlay. Irreversible — hence the double confirm.
+function deletePlayer(num) {
+  const p = DB.players.find(x => x.num === num);
+  const nm = p ? p.name : ('#' + num);
+  if (!confirm(`Permanently delete ${nm} (#${num})?\n\nThis removes ALL of their data from every sheet (benchmarks, evaluations, values, feedback) and CANNOT be undone.`)) return;
+  if (!confirm('Are you absolutely sure? This is permanent.')) return;
+  // Optimistic local removal across all collections.
+  ['players','benchmarks','evaluation','values','feedback'].forEach(k => { DB[k] = DB[k].filter(r => r.num !== num); });
+  if (_editsOverlay) Object.keys(_editsOverlay).forEach(id => { if (id.endsWith('__' + num)) delete _editsOverlay[id]; });
+  // Remove from the Sheet, and clean up any Firestore edit docs (best-effort).
+  sheetWrite({ action:'deletePlayer', num, name: nm });
+  ['benchmarks','evaluation','values','feedback','player'].forEach(cat => {
+    try { window._db.collection('edits').doc(cat + '__' + num).delete().catch(() => {}); } catch(e) {}
+  });
+  _editing = false;
+  const s = _editSection || 'benchmarks';
+  show(s);
+  if (currentUser.role !== 'player') renderList(s);
 }
 
 const BENCH_GROUPS = [

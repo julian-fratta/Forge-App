@@ -77,7 +77,9 @@ All phases are now built:
   input and feedback becomes text boxes, across all tabs, with one Save.
 - **Player info & roster** — in Edit mode the player's name & team become
   editable, plus a "Hide this player" button (soft-delete: removed from the app,
-  kept in the Sheet). The "Add Player" button now persists to the Sheet.
+  kept in the Sheet) and a "Delete permanently" button (double-confirmed; removes
+  the player's rows from every tab — irreversible). "Add Player" persists to the
+  Sheet. (Player number stays fixed — it's the ID linking a player across tabs.)
 
 ### One more Apps Script update (recommended)
 The handler file was improved so writes to the **Pivotal Feedback** sheet land
