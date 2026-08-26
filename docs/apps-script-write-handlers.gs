@@ -29,7 +29,7 @@ function doPost(e) {
     }
     var out;
     switch (body.action) {
-      case 'updateCells': out = updateCells_(body.sheet, body.num, body.data); break;
+      case 'updateCells': out = updateCells_(body.sheet, body.num, body.data, body.name); break;
       case 'addPlayer':   out = addPlayer_(body); break;
       case 'hidePlayer':  out = setActive_(body.num, false); break;
       case 'showPlayer':  out = setActive_(body.num, true); break;
@@ -82,22 +82,32 @@ function isStaffEmail_(email) {
   return false;
 }
 
-/* Set header:value pairs on the row whose Player Number matches `num`. */
-function updateCells_(sheetName, num, data) {
+/* Set header:value pairs on the row for this player. Matches by Player Number,
+ * falling back to Player Name (some sheets, e.g. Pivotal Feedback, use row
+ * numbers instead of real player IDs). */
+function updateCells_(sheetName, num, data, name) {
   var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   if (!sh) return { ok: false, error: 'no_sheet:' + sheetName };
   var values = sh.getDataRange().getValues();
   var headers = values[0];
   var numCol = findNumCol_(headers);
-  if (numCol < 0) return { ok: false, error: 'no_player_number_col' };
+  var nameCol = findNameCol_(headers);
   var rowIdx = -1;
-  for (var r = 1; r < values.length; r++) {
-    if (String(values[r][numCol]) === String(num)) { rowIdx = r; break; }
+  if (numCol > -1) {
+    for (var r = 1; r < values.length; r++) {
+      if (String(values[r][numCol]) === String(num)) { rowIdx = r; break; }
+    }
+  }
+  if (rowIdx < 0 && nameCol > -1 && name) {
+    var target = String(name).trim().toLowerCase();
+    for (var r2 = 1; r2 < values.length; r2++) {
+      if (String(values[r2][nameCol]).trim().toLowerCase() === target) { rowIdx = r2; break; }
+    }
   }
   if (rowIdx < 0) return { ok: false, error: 'player_not_found:' + num };
   var written = [];
   Object.keys(data).forEach(function (header) {
-    var col = headers.indexOf(header);
+    var col = resolveHeader_(headers, header);
     if (col === -1) { // create the column if it doesn't exist yet (e.g. "Active")
       col = headers.length;
       sh.getRange(1, col + 1).setValue(header);
@@ -110,8 +120,27 @@ function updateCells_(sheetName, num, data) {
   return { ok: true, written: written };
 }
 
+/* Find a header, exact first then case/space-insensitive (avoids dup columns). */
+function resolveHeader_(headers, header) {
+  var i = headers.indexOf(header);
+  if (i > -1) return i;
+  var norm = function (s) { return String(s).trim().toLowerCase(); };
+  var t = norm(header);
+  for (var j = 0; j < headers.length; j++) { if (norm(headers[j]) === t) return j; }
+  return -1;
+}
+
 function findNumCol_(headers) {
   var cands = ['Player Number', 'Player Num', 'Player #', 'Number', 'Num', '#'];
+  for (var i = 0; i < cands.length; i++) {
+    var idx = headers.indexOf(cands[i]);
+    if (idx > -1) return idx;
+  }
+  return -1;
+}
+
+function findNameCol_(headers) {
+  var cands = ['Player Name', 'Name', 'Full Name', 'Player'];
   for (var i = 0; i < cands.length; i++) {
     var idx = headers.indexOf(cands[i]);
     if (idx > -1) return idx;

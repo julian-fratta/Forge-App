@@ -70,7 +70,20 @@ later hand-edit to the Sheet).
 ---
 
 ## Rollout status
-- **Phase 1 (now): Benchmarks** — editable end-to-end.
-- Phase 2: Evaluations. Phase 3: Feedback & Values. Phase 4: Player info & roster
-  (add player, hide/show). These reuse the same setup above — no additional
-  Apps Script or Firestore changes needed.
+All phases are now built:
+- **Benchmarks** — Edit button on the Benchmarks view.
+- **Evaluations** (Mindset / Technique / Tactical / Physical), **RISE UP**, and
+  **Coach Feedback** — Edit button on the Evaluation view; each metric becomes an
+  input and feedback becomes text boxes, across all tabs, with one Save.
+- **Player info & roster** — in Edit mode the player's name & team become
+  editable, plus a "Hide this player" button (soft-delete: removed from the app,
+  kept in the Sheet). The "Add Player" button now persists to the Sheet.
+
+### One more Apps Script update (recommended)
+The handler file was improved so writes to the **Pivotal Feedback** sheet land
+reliably (it now matches a player by name if that sheet doesn't use real player
+numbers, and matches columns case-insensitively so it never creates duplicates).
+To get it: re-paste `docs/apps-script-write-handlers.gs` (replacing the previous
+block, per the setup steps) and **Deploy → New version** once more.
+- Benchmarks, Evaluations, RISE UP, add/hide player already work on your current
+  deployment — this update is specifically to make **Feedback** writes robust.
