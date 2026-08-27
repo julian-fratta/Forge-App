@@ -77,6 +77,10 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .edit-banner{display:flex;align-items:center;gap:6px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.35);color:var(--accent);border-radius:8px;padding:9px 12px;margin-bottom:14px;font-size:12.5px;font-weight:600}
 .mrow .edit-inp{width:96px;background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;text-align:right;outline:none;transition:border-color .15s}
 .mrow .edit-inp:focus{border-color:var(--accent)}
+/* No spinner arrows on number inputs — type the value in */
+.edit-inp[type=number]{-moz-appearance:textfield;appearance:textfield}
+.edit-inp[type=number]::-webkit-outer-spin-button,
+.edit-inp[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .mrow .edit-inp-sm{width:70px}
 .edit-ta{width:100%;min-height:78px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;line-height:1.5;resize:vertical;outline:none;transition:border-color .15s}
 .edit-ta:focus{border-color:var(--accent)}
@@ -635,12 +639,14 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0bYsFFDeT8FCx
 // server-side (see setup docs) — no secret is stored in this public source.
 // Google Sheet tab name for each editable category.
 const SHEET_TABS = {
-  benchmarks: 'Benchmarks (Matrix)',
-  evaluation: 'Evaluation (Matrix)',
-  values:     'Values',
-  feedback:   'Pivotal Feedback',
-  player:     'Players'
+  benchmarks:  'Benchmarks (Matrix)',
+  evaluation:  'Evaluation (Matrix)',
+  values:      'Values',
+  feedback:    'Pivotal Feedback',
+  fundamental: 'Fundamental Behaviors',
+  player:      'Players'
 };
+let FUND_KEYS = []; // behavior column headers, captured from the sheet on load
 // Map app field-keys to their exact Sheet column headers, only where they differ
 // (benchmarks / evaluation / values use the header as the key directly).
 const FIELD_HEADERS = {
@@ -831,6 +837,12 @@ function applyRaw(raw) {
   DB.values     = processValues(raw['Values'] || []);
   DB.training   = processTraining(raw['Training Modules'] || []);
   DB.fundamental = processBehaviorSheet(raw['Fundamental Behaviors'] || []);
+  // Numeric behavior columns only (processBehaviorSheet drops text columns like
+  // "Team Name"), in first-seen order — used to render the editable Behaviors.
+  { const seen = {}; FUND_KEYS = [];
+    DB.fundamental.forEach(rec => Object.keys(rec).forEach(k => {
+      if (k !== 'num' && k !== 'Average' && !seen[k]) { seen[k] = 1; FUND_KEYS.push(k); }
+    })); }
   DB.skillbeh   = processBehaviorSheet(raw['Skill Behaviors'] || []);
   processUsers(raw['Users'] || []);
   if (_editsOverlay) applyEdits(); // re-layer coach/admin edits over fresh sheet data
@@ -959,7 +971,7 @@ async function maybeSnapshot(category, playerNum, currentValues) {
 // app) AND mirrored to the Google Sheet. On load we layer the overlay onto the
 // sheet-sourced DB with a newest-wins rule (using each field's recorded `prev`
 // sheet value) so hand-edits to the Sheet and in-app edits both stay correct.
-const EDIT_CATS = { benchmarks:()=>DB.benchmarks, evaluation:()=>DB.evaluation, values:()=>DB.values, feedback:()=>DB.feedback };
+const EDIT_CATS = { benchmarks:()=>DB.benchmarks, evaluation:()=>DB.evaluation, values:()=>DB.values, feedback:()=>DB.feedback, fundamental:()=>DB.fundamental };
 let _editsOverlay = null; // { `cat__num`: {category,num,fields:{key:{value,prev,ts}}} }
 
 function isStaff(){ return !!currentUser && (currentUser.role==='coach' || currentUser.role==='admin'); }
@@ -979,6 +991,7 @@ function recomputeAvg(cat, rec) {
   let keys = null;
   if (cat==='evaluation') keys = EVAL_KEYS;
   else if (cat==='values') keys = ['Respectful','Industrious','Student','Enduring','United','Passionate'];
+  else if (cat==='fundamental') keys = Object.keys(rec).filter(k => k!=='num' && k!=='Average');
   if (!keys) return;
   const vals = keys.map(k=>rec[k]).filter(v=>v!=null);
   if (vals.length) rec.Average = parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2));
@@ -1120,14 +1133,8 @@ function nav(id) {
       fetch(APPS_SCRIPT_URL + '?t=' + Date.now())
         .then(r => r.json())
         .then(raw => {
-          DB.players    = processPlayers(raw['Players'] || []);
-          DB.benchmarks = processBenchmarks(raw['Benchmarks (Matrix)'] || []);
-          DB.evaluation = processEvaluation(raw['Evaluation (Matrix)'] || []);
-          DB.feedback   = processFeedback(raw['Pivotal Feedback'] || [], DB.players);
-          DB.values     = processValues(raw['Values'] || []);
-          DB.training   = processTraining(raw['Training Modules'] || []);
-          DB.fundamental = processBehaviorSheet(raw['Fundamental Behaviors'] || []);
-          DB.skillbeh   = processBehaviorSheet(raw['Skill Behaviors'] || []);
+          applyRaw(raw); // unified processing + re-applies coach/admin edits overlay
+          try { localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(raw)); } catch(e) {}
         })
         .catch(() => {}); // silent fail — user already has current data
     }, 400); // small delay so home renders first
@@ -1600,7 +1607,7 @@ function showDetail(num, fromSection) {
       `<div class="tab${i===0?' active':''}" onclick="switchTab(${i})">${t}</div>`
     ).join('');
     const forgeIdentity =
-      buildBehaviorSection(fund, 'Behaviors', 'No behaviors data yet.', 'fundamental') +
+      buildBehaviorSection(fund, 'Behaviors', 'No behaviors data yet.', 'fundamental', ed) +
       buildVal(val, ed) +
       buildEvalGroup(evalD, 'Mindset', ed) +
       buildFb(fb, player, ed);
@@ -1611,7 +1618,7 @@ function showDetail(num, fromSection) {
       buildEvalGroup(evalD, 'Physical', ed),
       buildSelfFeedbackPanel(num, isPlayer)
     ];
-    const edBanner = ed ? `<div class="edit-banner">✎ Editing — Mindset, Technique, Tactical, Physical, RISE UP & Feedback save to the app and your Sheet.</div>` : '';
+    const edBanner = ed ? `<div class="edit-banner">✎ Editing — Behaviors, RISE UP, Mindset, Technique, Tactical, Physical & Feedback save to the app and your Sheet.</div>` : '';
     const saveBar = ed ? `<div class="edit-actions edit-actions-sticky"><button type="button" class="btn-secondary" onclick="cancelEdit()">Cancel</button><button type="button" class="btn-primary" id="edit-save-btn" onclick="commitEdits(${num},'evaluation')">Save changes</button></div>` : '';
     document.getElementById('detail-body').innerHTML = phdrHTML + edBanner + contents.map((c,i) =>
       `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
@@ -1663,7 +1670,17 @@ function srow(label, val) {
   return `<div class="mrow"><span class="mname">${label}</span><div class="sbar-wrap"><div class="sbar" style="width:0%;background:${col}" data-w="${pct}"></div></div><span class="mval">${val}<span class="munit">/10</span></span></div>`;
 }
 
-function buildBehaviorSection(data, title, emptyMsg, category) {
+function buildBehaviorSection(data, title, emptyMsg, category, editable) {
+  if (editable) {
+    const eKeys = (category==='fundamental' && FUND_KEYS.length) ? FUND_KEYS
+                : Object.keys(data).filter(k => k !== 'num' && k !== 'Average');
+    if (!eKeys.length) return `<div class="no-data">${emptyMsg}</div>`;
+    return `<div class="mg"><h4>${title}</h4>` + eKeys.map(k => {
+      const v = data[k] != null ? data[k] : '';
+      return `<div class="mrow"><span class="mname">${k}</span>`
+        + `<input class="edit-inp edit-inp-sm" type="number" step="0.5" min="0" max="10" inputmode="decimal" data-cat="${category}" data-k="${k}" value="${v}" placeholder="—"></div>`;
+    }).join('') + `</div>`;
+  }
   const keys = Object.keys(data).filter(k => k !== 'num' && k !== 'Average');
   let mount = '';
   if (category) {
