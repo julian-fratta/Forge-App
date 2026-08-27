@@ -33,6 +33,7 @@ function doPost(e) {
       case 'addPlayer':   out = addPlayer_(body); break;
       case 'hidePlayer':  out = setActive_(body.num, false); break;
       case 'showPlayer':  out = setActive_(body.num, true); break;
+      case 'deletePlayer': out = deletePlayer_(body.num, body.name); break;
       default:            out = { ok: false, error: 'unknown_action' };
     }
     out.by = email;
@@ -167,6 +168,29 @@ function addPlayer_(b) {
 
 function setActive_(num, active) {
   return updateCells_('Players', num, { 'Active': active ? true : false });
+}
+
+/* Permanently delete a player's row from every data tab. Matches by Player
+ * Number, falling back to Player Name. Deletes bottom-up so row indices don't
+ * shift mid-loop. */
+function deletePlayer_(num, name) {
+  var tabs = ['Players', 'Benchmarks (Matrix)', 'Evaluation (Matrix)', 'Values', 'Pivotal Feedback'];
+  var removed = [];
+  var target = name ? String(name).trim().toLowerCase() : null;
+  tabs.forEach(function (t) {
+    var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(t);
+    if (!sh) return;
+    var values = sh.getDataRange().getValues();
+    var headers = values[0];
+    var numCol = findNumCol_(headers), nameCol = findNameCol_(headers);
+    for (var r = values.length - 1; r >= 1; r--) {
+      var byNum  = numCol > -1 && String(values[r][numCol]) === String(num);
+      var byName = !byNum && nameCol > -1 && target &&
+                   String(values[r][nameCol]).trim().toLowerCase() === target;
+      if (byNum || byName) { sh.deleteRow(r + 1); removed.push(t); }
+    }
+  });
+  return { ok: true, removed: removed };
 }
 
 function ensureCol_(sh, headers, name) {
