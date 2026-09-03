@@ -725,6 +725,8 @@ const EVAL_KEYS = Object.keys(EVAL_GROUPS).reduce((all, g) => all.concat(EVAL_GR
 // we want to show (keys on the left must match the sheet headers exactly).
 const EVAL_LABELS = {
   'Level of Engagement (on and off ball)': 'Level of Engagement',
+  'Energy (high & positive)': 'Positive Energy',
+  'Level of Correction (with feedback)': 'Level of Correction',
   'Strength': 'Strength (Body Control)'
 };
 function evalLabel(key) { return EVAL_LABELS[key] || key; }
@@ -1857,6 +1859,7 @@ function initBenchCharts() {
   _benchCharts = [];
   const baseOpts = () => ({
     responsive:true, maintainAspectRatio:false,
+    layout:{padding:{top:22,left:12,right:12}}, // headroom + side room so labels never clip
     plugins:{legend:{display:false},tooltip:{enabled:false}},
     scales:{
       x:{ticks:{color:'#8b91a0',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}},
@@ -1864,20 +1867,34 @@ function initBenchCharts() {
     },
     animation:{duration:600}
   });
+  // Value labels: inside the bar for bar charts; above the point for line charts.
+  // x is clamped to the plot area so edge labels don't get cut off.
   const dataLabelPlugin = {
     id:'customDataLabels',
     afterDatasetsDraw(chart) {
-      const ctx=chart.ctx;
+      const ctx=chart.ctx, area=chart.chartArea, isBar=chart.config.type==='bar';
+      ctx.save();
+      ctx.font='600 10px Barlow,sans-serif';
+      ctx.textAlign='center';
       chart.data.datasets.forEach((ds,i)=>{
         chart.getDatasetMeta(i).data.forEach((el,idx)=>{
           const val=ds.data[idx];
           if(val==null)return;
-          ctx.save();ctx.font='500 10px Barlow,sans-serif';ctx.fillStyle='rgba(255,255,255,0.75)';
-          ctx.textAlign='center';ctx.textBaseline='bottom';
-          ctx.fillText(val.toFixed(2)+'s',el.x,chart.config.type==='bar'?el.y-5:el.y-8);
-          ctx.restore();
+          const txt=val.toFixed(2)+'s';
+          const half=ctx.measureText(txt).width/2 + 3;
+          const x=Math.min(Math.max(el.x, area.left+half), area.right-half);
+          if(isBar){
+            ctx.fillStyle='rgba(255,255,255,0.95)';
+            ctx.textBaseline='top';
+            ctx.fillText(txt, x, el.y+6);   // just inside the top of the bar
+          } else {
+            ctx.fillStyle='rgba(255,255,255,0.85)';
+            ctx.textBaseline='bottom';
+            ctx.fillText(txt, x, el.y-7);    // above the point (top padding prevents clipping)
+          }
         });
       });
+      ctx.restore();
     }
   };
   const gold='rgba(201,162,39,0.9)',goldBg='rgba(201,162,39,0.15)';
