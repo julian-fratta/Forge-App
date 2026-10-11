@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Forge Academy's player-development hub — evaluations, benchmarks, RISE UP values, coach feedback, and training & analysis videos.">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Forge">
@@ -359,6 +361,15 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
   .mrow,.player-row,.video-card{transition:none}
   .mrow:hover,.player-row:hover,.video-card:hover,.mrow:active,.player-row:active,.video-card:active{transform:none}
 }
+
+/* ============ NATIVE STANDALONE — notch / safe areas ============ */
+/* With viewport-fit=cover + translucent status bar, content extends under the
+   notch; these insets keep headers and content clear of it (0 on devices
+   without a notch, so no effect in the browser or on older phones). */
+.header{padding-top:calc(13px + env(safe-area-inset-top, 0px))}
+#login{padding-top:calc(28px + env(safe-area-inset-top, 0px));padding-bottom:calc(20px + env(safe-area-inset-bottom, 0px))}
+.home-quote-wrap{padding-bottom:calc(6px + env(safe-area-inset-bottom, 0px))}
+.list-body,.detail-body{scroll-padding-bottom:env(safe-area-inset-bottom, 0px)}
 
 /* ============ RESPONSIVE — tablet / desktop ============ */
 /* Mobile (below) is the base design. These progressively give the app shell
