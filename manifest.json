@@ -1,13 +1,21 @@
 {
   "name": "Forge Performance",
   "short_name": "Forge",
+  "description": "Forge Academy's player-development hub — evaluations, benchmarks, RISE UP values, coach feedback, and training & analysis videos in one place.",
+  "id": "/Forge-App/",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0E1523",
   "theme_color": "#0E1523",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["sports", "education", "health"],
   "icons": [
-    { "src": "icons/icon-32.png", "sizes": "32x32", "type": "image/png" },
-    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "icons/icon-32.png", "sizes": "32x32", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

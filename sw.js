@@ -1,4 +1,4 @@
-const CACHE = 'forge-shell-v3';
+const CACHE = 'forge-shell-v4';
 // Stable, rarely-changing assets — safe to serve cache-first for speed.
 const STATIC_ASSETS = [
   'manifest.json',
