@@ -268,6 +268,8 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .drawer-close:hover{background:var(--bg3)}
 .drawer-logout{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);cursor:pointer;padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;letter-spacing:.5px;margin-bottom:22px;transition:border-color .15s}
 .drawer-logout:hover{border-color:var(--red);color:var(--red)}
+.drawer-delete{width:100%;background:none;border:none;color:var(--text3);cursor:pointer;padding:4px 6px 2px;font-family:'Barlow',sans-serif;font-size:12.5px;text-decoration:underline;text-underline-offset:3px;transition:color .15s;margin-bottom:18px}
+.drawer-delete:hover{color:var(--red)}
 .drawer-section h4{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);margin-bottom:4px}
 .drawer-hint{font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:14px}
 .rating-band{margin-bottom:15px}
@@ -701,6 +703,7 @@ firebase.auth().onAuthStateChanged(user => {
         <button type="button" class="drawer-close" onclick="closeMenu()" aria-label="Close menu">&times;</button>
       </div>
       <button type="button" class="drawer-logout" onclick="closeMenu();doLogout()">Log Out</button>
+      <button type="button" class="drawer-delete" onclick="deleteMyAccount()">Delete Account</button>
     </div>
   </div>
 </div>
@@ -1536,6 +1539,37 @@ function doLogout() {
   showSignIn();
   document.getElementById('email-in').value = '';
   document.getElementById('p-in').value = '';
+}
+
+// In-app account deletion (required by Apple App Store guideline 5.1.1(v) for
+// any app that lets users create an account). Deletes the signed-in user's
+// login + their self-authored entries. Team records stay with the Academy.
+async function deleteMyAccount() {
+  if (!currentUser) return;
+  if (!confirm('Delete your Forge account?\n\nThis permanently removes your sign-in and any self-entries you have saved. Your team records are managed by the Academy — contact your coach to have those removed.')) return;
+  if (!confirm('This cannot be undone. Delete your account now?')) return;
+  const user = window._firebaseAuth && window._firebaseAuth.currentUser;
+  try {
+    // Best-effort removal of the player's own entries.
+    if (currentUser.role === 'player' && currentUser.number != null && window._db) {
+      for (const c of ['selfEvaluations', 'selfFeedback']) {
+        try {
+          const snap = await window._db.collection(c).where('playerNum', '==', currentUser.number).get();
+          await Promise.all(snap.docs.map(d => d.ref.delete()));
+        } catch (e) { /* rules may restrict deletes — non-blocking */ }
+      }
+    }
+    if (user) await user.delete(); // remove the Firebase auth account
+    closeMenu();
+    alert('Your account has been deleted.');
+    doLogout();
+  } catch (e) {
+    if (e && e.code === 'auth/requires-recent-login') {
+      alert('For your security, please log out and sign back in, then delete your account.');
+    } else {
+      alert('Could not delete your account: ' + ((e && e.message) || e));
+    }
+  }
 }
 
 // ── Side menu drawer (avatar → Log Out + rating scale) ─────────────────
