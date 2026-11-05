@@ -168,6 +168,11 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .pr-info p{font-size:12px;color:var(--text2);margin-top:1px}
 .pr-num{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:var(--accent);opacity:.45}
 .no-data{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:14px}
+.empty-state{text-align:center;padding:2.8rem 1.25rem;display:flex;flex-direction:column;align-items:center}
+.empty-state-icon{width:48px;height:48px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text3);margin-bottom:14px}
+.empty-state-icon svg{width:23px;height:23px}
+.empty-state-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:600;letter-spacing:.6px;color:var(--text2)}
+.empty-state-sub{font-size:13px;color:var(--text3);line-height:1.55;max-width:250px;margin-top:5px}
 
 /* DETAIL */
 .tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 16px;overflow-x:auto;scrollbar-width:none}
@@ -387,7 +392,7 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
   #app{max-width:560px}
   .drawer-shell{max-width:560px}
   .tab-content.active{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;align-content:start}
-  .tab-content.active>.avg-badge,.tab-content.active>.chart-section,.tab-content.active>.no-data{grid-column:1/-1}
+  .tab-content.active>.avg-badge,.tab-content.active>.chart-section,.tab-content.active>.no-data,.tab-content.active>.empty-state,.tab-content.active>.mg-wide{grid-column:1/-1}
 }
 @media (min-width:1440px){
   #app{max-width:620px;margin:48px auto;min-height:calc(100vh - 96px);max-height:calc(100vh - 96px)}
@@ -781,7 +786,7 @@ function sheetHeader(cat, dbKey) {
 
 let USERS = {};
 
-let DB = {players:[], benchmarks:[], evaluation:[], feedback:[], values:[], training:[], analysis:[], fundamental:[], skillbeh:[]};
+let DB = {players:[], benchmarks:[], benchmarks1024:[], evaluation:[], feedback:[], values:[], training:[], analysis:[], fundamental:[], skillbeh:[]};
 let currentUser = null;
 let teamFilter = 'All';
 let dataReady = null; // promise, set at boot — awaited by any action that needs USERS/DB
@@ -800,7 +805,22 @@ function processBenchmarks(rows) {
   const keys = ['5 m Dribble','10 m Dribble','1 m Fig 8','2 m Fig 8','4 m Fig 8','1m Star','2m Star','4m Star','2 m Turning','4 m Turning','M Test','Futsalnout','First Round','Second Round'];
   return rows.filter(r => r['Player Number']).map(r => {
     const o = {num: parseInt(r['Player Number'])};
-    keys.forEach(k => { if (r[k] != null && !isNaN(r[k])) o[k] = parseFloat(r[k]); });
+    keys.forEach(k => { if (r[k] != null && r[k] !== '' && !isNaN(r[k])) o[k] = parseFloat(r[k]); });
+    return o;
+  });
+}
+
+// Oct 24 benchmark session. Reads the formula-driven summary tab, which turns
+// the raw attempts on "Benchmarks 10/24" into one row per tested player.
+const BENCH1024_SHEET = 'Benchmarks Oct 24 App'; // exact Google Sheet tab name
+function processBenchSession(rows) {
+  const skip = {'Player Number':1,'Player Name':1};
+  return rows.filter(r => r['Player Number']).map(r => {
+    const o = {num: parseInt(r['Player Number'])};
+    Object.keys(r).forEach(k => {
+      if (skip[k]) return;
+      if (r[k] != null && r[k] !== '' && !isNaN(r[k])) o[k] = parseFloat(r[k]);
+    });
     return o;
   });
 }
@@ -899,7 +919,7 @@ function processValues(rows) {
   const keys = ['Respectful','Industrious','Student','Enduring','United','Passionate'];
   return rows.filter(r => r['Player Number']).map(r => {
     const o = {num: parseInt(r['Player Number'])};
-    keys.forEach(k => { if (r[k] != null && !isNaN(r[k])) o[k] = parseFloat(r[k]); });
+    keys.forEach(k => { if (r[k] != null && r[k] !== '' && !isNaN(r[k])) o[k] = parseFloat(r[k]); });
     const vals = keys.map(k => o[k]).filter(v => v != null);
     if (vals.length) o.Average = parseFloat((vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(2));
     return o;
@@ -922,12 +942,16 @@ function processTraining(rows) {
 // fresh copy in the background. First-ever visit still waits for the network.
 // `freshDataPromise` lets sign-in fall back to the live fetch when a brand-new
 // account isn't in the cached USERS yet.
-const DATA_CACHE_KEY = 'forgeDataRaw_v1';
+// Bump the version when the feed gains a tab, so returning devices fetch it
+// before showing the app instead of first loading a cached copy without it.
+const DATA_CACHE_KEY = 'forgeDataRaw_v2';
+try { localStorage.removeItem('forgeDataRaw_v1'); } catch(e) {}
 let freshDataPromise = null;
 
 function applyRaw(raw) {
   DB.players    = processPlayers(raw['Players'] || []);
   DB.benchmarks = processBenchmarks(raw['Benchmarks (Matrix)'] || []);
+  DB.benchmarks1024 = processBenchSession(raw[BENCH1024_SHEET] || []);
   DB.evaluation = processEvaluation(raw['Evaluation (Matrix)'] || []);
   DB.feedback   = processFeedback(raw['Pivotal Feedback'] || [], DB.players);
   DB.values     = processValues(raw['Values'] || []);
@@ -1689,7 +1713,7 @@ function renderList(section) {
   ).join('');
   if (section === 'benchmarks') document.getElementById('add-btn').style.display = currentUser.role==='coach'||currentUser.role==='admin' ? 'block' : 'none';
   const listEl = document.getElementById('l-' + sid);
-  if (!players.length) { listEl.innerHTML = '<div class="no-data">No players found.</div>'; return; }
+  if (!players.length) { listEl.innerHTML = emptyState('No players found', 'Try a different name, number, or team filter.'); return; }
   listEl.innerHTML = `<div class="sec-label">${players.length} player${players.length!==1?'s':''}</div>` +
     players.map(p =>
       `<div class="player-row" onclick="showDetail(${p.num},'${section}')"><div class="pr-info"><h3>${p.name}</h3><p>${p.team}</p></div><div class="pr-num">#${p.num}</div></div>`
@@ -1736,7 +1760,7 @@ function showDetail(num, fromSection) {
       `<div class="tab${i===0?' active':''}" onclick="switchTab(${i})">${t}</div>`
     ).join('');
     const forgeIdentity =
-      buildBehaviorSection(fund, 'Behaviors', 'No behaviors data yet.', 'fundamental', ed) +
+      buildBehaviorSection(fund, 'Behaviors', 'No behaviors yet', 'fundamental', ed) +
       buildVal(val, ed) +
       buildEvalGroup(evalD, 'Mindset', ed) +
       buildFb(fb, player, ed);
@@ -1752,6 +1776,22 @@ function showDetail(num, fromSection) {
     document.getElementById('detail-body').innerHTML = phdrHTML + edBanner + contents.map((c,i) =>
       `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
     ).join('') + saveBar;
+  } else if (!ed && hasBenchSession(num)) {
+    // Benchmarks with a recent session (e.g. "Benchmarks 10/24"): two tabs,
+    // the running matrix and the session. The session tab only appears for
+    // players who have data in that sheet. Players with nothing on the running
+    // matrix open straight on the session, so they don't land on an empty tab.
+    // (Editing still uses the single matrix view below.)
+    const bench1024 = byNum(DB.benchmarks1024, num);
+    const tabNames = ['Benchmarks','10/24'];
+    const startTab = Object.keys(bench).some(k => k !== 'num') ? 0 : 1;
+    document.getElementById('detail-tabs').innerHTML = tabNames.map((t,i) =>
+      `<div class="tab${i===startTab?' active':''}" onclick="switchTab(${i})">${t}</div>`
+    ).join('');
+    const contents = [buildBench(bench), buildBenchSession(bench1024)];
+    document.getElementById('detail-body').innerHTML = phdrHTML + contents.map((c,i) =>
+      `<div class="tab-content${i===startTab?' active':''}" id="tc-${i}">${c}</div>`
+    ).join('');
   } else {
     // Benchmarks — single view, no tabs. Staff can flip into edit mode.
     document.getElementById('detail-tabs').innerHTML = '';
@@ -1799,6 +1839,15 @@ function srow(label, val) {
   return `<div class="mrow"><span class="mname">${label}</span><div class="sbar-wrap"><div class="sbar" style="width:0%;background:${col}" data-w="${pct}"></div></div><span class="mval">${val}<span class="munit">/10</span></span></div>`;
 }
 
+// Professional empty state shown wherever a player has no data in a section yet.
+const EMPTY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>';
+const CHECK_BACK = 'Check back soon — this updates as your coaches add new information.';
+function emptyState(title, sub) {
+  return `<div class="empty-state"><div class="empty-state-icon">${EMPTY_ICON}</div>`
+    + `<div class="empty-state-title">${title}</div>`
+    + (sub ? `<div class="empty-state-sub">${sub}</div>` : '') + `</div>`;
+}
+
 function buildBehaviorSection(data, title, emptyMsg, category, editable) {
   if (editable) {
     const eKeys = (category==='fundamental' && FUND_KEYS.length) ? FUND_KEYS
@@ -1817,7 +1866,7 @@ function buildBehaviorSection(data, title, emptyMsg, category, editable) {
     setTimeout(() => populateHistory(category, data.num, data, mountId, 'numeric'), 0);
     mount = `<div id="${mountId}"></div>`;
   }
-  if (!keys.length) return `<div class="no-data">${emptyMsg}</div>` + mount;
+  if (!keys.length) return emptyState(emptyMsg, CHECK_BACK) + mount;
   let h = data.Average != null ? `<div class="avg-badge"><span>Average Score</span><strong>${data.Average.toFixed(2)}/10</strong></div>` : '';
   h += `<div class="mg"><h4>${title}</h4>${keys.map(k=>srow(k,data[k])).join('')}</div>`;
   return h + mount;
@@ -1943,7 +1992,7 @@ function commitEdits(num, section) {
 
 function buildBench(b) {
   const keys = Object.keys(b).filter(k=>k!=='num');
-  if (!keys.length) return '<div class="no-data">No benchmark data recorded yet.</div>';
+  if (!keys.length) return emptyState('No benchmarks yet', CHECK_BACK);
   const groups = [
     ['Dribble', ['5 m Dribble','10 m Dribble'], 's'],
     ['Figure 8', ['1 m Fig 8','2 m Fig 8','4 m Fig 8'], 's'],
@@ -1974,6 +2023,39 @@ function buildBench(b) {
   const mountId = 'hist-benchmarks-' + b.num;
   setTimeout(() => populateHistory('benchmarks', b.num, b, mountId, 'numeric', 's'), 0);
   return chartsHTML + metricsHTML + `<div id="${mountId}"></div>`;
+}
+
+// True if this player has any data in the generic benchmark session tab.
+function hasBenchSession(num) {
+  const d = byNum(DB.benchmarks1024, num);
+  return Object.keys(d).some(k => k !== 'num');
+}
+
+// Each metric is [label shown in the app, summary tab column header, unit].
+const BENCH_SESSION_GROUPS = [
+  ['Repeated Sprint', [['Percent Decrement','Repeated Sprint Decrement (%)','%']]],
+  ['Jumps', [['Counter Movement Jump','Counter Movement Jump (in)','in'],['Broad Jump','Broad Jump (in)','in']]],
+  ['10m Sprint', [['Best Time','10m Sprint Best (s)','s'],['Average','10m Sprint Average (s)','s']]],
+  ['5m Turning', [['Without Ball','5m Turning Without Ball (s)','s'],['With Ball','5m Turning With Ball (s)','s']]],
+  ['2m Star', [['Without Ball','2m Star Without Ball (s)','s'],['With Ball','2m Star With Ball (s)','s']]],
+  ['10m Dribble', [['Strong Foot','10m Dribble Strong Foot (s)','s'],['Weak Foot','10m Dribble Weak Foot (s)','s'],['Both Feet','10m Dribble Both Feet (s)','s']]],
+  ['Other', [['M Test','M Test (s)','s'],['Illinois Agility','Illinois Agility (s)','s']]]
+];
+
+function buildBenchSession(b) {
+  if (!Object.keys(b).some(k => k !== 'num')) return emptyState('No results yet', CHECK_BACK);
+  const groups = BENCH_SESSION_GROUPS.map(([title, metrics]) => {
+    let rows = metrics.map(([label, key, unit]) => mrow(label, b[key], unit)).join('');
+    // Futsalnaut is a plain count, so it shows as a whole number with no unit.
+    if (title === 'Other') {
+      const f = b['Futsalnaut'];
+      rows += f == null
+        ? `<div class="mrow"><span class="mname">Futsalnaut</span><span style="color:var(--text3)">—</span></div>`
+        : `<div class="mrow"><span class="mname">Futsalnaut</span><span class="mval">${f}</span></div>`;
+    }
+    return `<div class="mg${metrics.length === 1 ? ' mg-wide' : ''}"><h4>${title}</h4>${rows}</div>`;
+  });
+  return groups.join('');
 }
 
 let _benchCharts = [];
@@ -2054,7 +2136,7 @@ function buildEvalGroup(e, groupName, editable) {
     }).join('') + `</div>`;
   }
   const scored = keys.filter(k => e[k] != null);
-  if (!scored.length) return `<div class="no-data">No ${groupName.toLowerCase()} scores recorded yet.</div>`;
+  if (!scored.length) return emptyState('No ' + groupName.toLowerCase() + ' scores yet', CHECK_BACK);
   const avg = (scored.reduce((sum,k) => sum + e[k], 0) / scored.length).toFixed(2);
   return `<div class="avg-badge"><span>${groupName} Average</span><strong>${avg}/10</strong></div>` +
     `<div class="mg"><h4>${groupName}</h4>${keys.map(k => srow(evalLabel(k), e[k])).join('')}</div>`;
@@ -2062,7 +2144,7 @@ function buildEvalGroup(e, groupName, editable) {
 
 // All categories stacked — used where Evaluation appears as a single tab.
 function buildEval(e) {
-  if (!EVAL_KEYS.some(k => e[k] != null)) return '<div class="no-data">No evaluation data recorded yet.</div>';
+  if (!EVAL_KEYS.some(k => e[k] != null)) return emptyState('No evaluation yet', CHECK_BACK);
   let html = e.Average ? `<div class="avg-badge"><span>Average Score</span><strong>${e.Average}/10</strong></div>` : '';
   html += Object.keys(EVAL_GROUPS).map(g =>
     `<div class="mg"><h4>${g}</h4>${EVAL_GROUPS[g].map(k => srow(evalLabel(k), e[k])).join('')}</div>`
@@ -2105,7 +2187,7 @@ function buildFb(fb, player, editable) {
   const mountId = 'hist-feedback-' + num;
   setTimeout(() => populateHistory('feedback', num, fb || {num}, mountId, 'feedback'), 0);
   const mount = `<div id="${mountId}"></div>`;
-  if(!fb||(!fb.great&&!fb.improve))return`<div class="no-data">No feedback recorded yet for ${player.name}.</div>`+mount;
+  if(!fb||(!fb.great&&!fb.improve))return emptyState('No feedback yet', "Check back soon — your coach's feedback will appear here.")+mount;
   const blocks = (fb.great ? fbBlock('great','One Great Thing', escapeHtml(fb.great)) : '')
     + (fb.improve ? fbBlock('improve','One to Improve', escapeHtml(fb.improve)) : '');
   return fbPanel("Coach's Feedback", blocks) + mount;
@@ -2137,7 +2219,7 @@ function buildVal(v, editable) {
   const mountId = 'hist-values-' + v.num;
   setTimeout(() => populateHistory('values', v.num, v, mountId, 'numeric'), 0);
   const mount = `<div id="${mountId}"></div>`;
-  if(!keys.some(k=>v[k]!=null))return'<div class="no-data">No RISE UP data recorded yet.</div>'+mount;
+  if(!keys.some(k=>v[k]!=null))return emptyState('No RISE UP scores yet', CHECK_BACK)+mount;
   let html=v.Average?`<div class="avg-badge"><span>RISE UP Average</span><strong>${v.Average.toFixed(2)}/10</strong></div>`:'';
   html+=`<div class="mg"><h4>RISE UP</h4>${keys.map(k=>srow(k,v[k])).join('')}</div>`;
   return html+mount;
@@ -2273,7 +2355,7 @@ async function populateSelfEval(playerNum, editable, panelId) {
   } else {
     el.innerHTML = entries.length
       ? `<div class="mg"><h4>RISE UP Self Eval</h4>${SELF_EVAL_KEYS.map(k => srow(k, current[k])).join('')}</div>` + buildArchiveList(archive, renderSelfEvalArchiveEntry)
-      : `<div class="no-data">This player hasn't submitted a self-evaluation yet.</div>`;
+      : emptyState('No self-evaluation yet', "This player hasn't submitted a self-evaluation.");
     setTimeout(() => animateBars(el), 30);
   }
 }
@@ -2331,7 +2413,7 @@ async function populateSelfFeedback(playerNum, editable, panelId) {
       + (current.toImprove ? fbBlock('improve','To Improve', escapeHtml(current.toImprove)) : '');
     el.innerHTML = fbPanel('Self Feedback', blocks) + buildArchiveList(archive, renderSelfFeedbackArchiveEntry);
   } else {
-    el.innerHTML = `<div class="no-data">This player hasn't submitted self-feedback yet.</div>`;
+    el.innerHTML = emptyState('No self-feedback yet', "This player hasn't submitted self-feedback.");
   }
 }
 
@@ -2360,7 +2442,7 @@ async function submitSelfFeedback(playerNum, panelId) {
 function renderVideoList(items, mountId, emptyMsg) {
   const list = document.getElementById(mountId);
   if(!list) return;
-  if(!items.length){list.innerHTML=`<div class="no-data">${emptyMsg}</div>`;return;}
+  if(!items.length){list.innerHTML=emptyState(emptyMsg, 'Check back soon — new videos are added here.');return;}
   const levels=[],groups={};
   items.forEach(v=>{if(!groups[v.level]){groups[v.level]=[];levels.push(v.level);}groups[v.level].push(v);});
   list.innerHTML=levels.map(level=>`<div class="level-header">${level}</div>`+
@@ -2374,8 +2456,8 @@ function renderVideoList(items, mountId, emptyMsg) {
     }).join('')
   ).join('');
 }
-function renderTraining() { renderVideoList(DB.training, 'training-list', 'No training modules available yet.'); }
-function renderAnalysis() { renderVideoList(DB.analysis, 'analysis-list', 'No analysis videos available yet.'); }
+function renderTraining() { renderVideoList(DB.training, 'training-list', 'No training modules yet'); }
+function renderAnalysis() { renderVideoList(DB.analysis, 'analysis-list', 'No analysis videos yet'); }
 
 function extractYouTubeId(url){const m=url.match(/[?&]v=([^&#]+)/);return m?m[1]:null;}
 
