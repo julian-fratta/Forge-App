@@ -335,6 +335,8 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .mrow:active{transform:scale(.995)}
 .mname{font-size:14px;color:var(--text2);font-weight:500}
 .mval{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.4px}
+.sprint-times{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sprint-times .mrow{flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:0}
 .munit{font-size:11px;color:var(--text3);margin-left:3px;font-weight:400}
 
 /* Score bars — thicker, fully rounded, subtler track */
@@ -942,10 +944,11 @@ function processTraining(rows) {
 // fresh copy in the background. First-ever visit still waits for the network.
 // `freshDataPromise` lets sign-in fall back to the live fetch when a brand-new
 // account isn't in the cached USERS yet.
-// Bump the version when the feed gains a tab, so returning devices fetch it
-// before showing the app instead of first loading a cached copy without it.
-const DATA_CACHE_KEY = 'forgeDataRaw_v2';
-try { localStorage.removeItem('forgeDataRaw_v1'); } catch(e) {}
+// Bump the version when the feed gains a tab or column the app needs, so
+// returning devices fetch it before showing the app instead of first loading
+// a cached copy without it.
+const DATA_CACHE_KEY = 'forgeDataRaw_v3';
+try { ['forgeDataRaw_v1','forgeDataRaw_v2'].forEach(k => localStorage.removeItem(k)); } catch(e) {}
 let freshDataPromise = null;
 
 function applyRaw(raw) {
@@ -2034,7 +2037,7 @@ function hasBenchSession(num) {
 // Each metric is [label shown in the app, summary tab column header, unit].
 const BENCH_SESSION_GROUPS = [
   ['Repeated Sprint', [['Percent Decrement','Repeated Sprint Decrement (%)','%']]],
-  ['Jumps', [['Counter Movement Jump','Counter Movement Jump (in)','in'],['Broad Jump','Broad Jump (in)','in']]],
+  ['Best Jumps', [['Counter Movement Jump','Counter Movement Jump Best (in)','in'],['Broad Jump','Broad Jump Best (in)','in']]],
   ['10m Sprint', [['Best Time','10m Sprint Best (s)','s'],['Average','10m Sprint Average (s)','s']]],
   ['5m Turning', [['Without Ball','5m Turning Without Ball (s)','s'],['With Ball','5m Turning With Ball (s)','s']]],
   ['2m Star', [['Without Ball','2m Star Without Ball (s)','s'],['With Ball','2m Star With Ball (s)','s']]],
@@ -2046,6 +2049,13 @@ function buildBenchSession(b) {
   if (!Object.keys(b).some(k => k !== 'num')) return emptyState('No results yet', CHECK_BACK);
   const groups = BENCH_SESSION_GROUPS.map(([title, metrics]) => {
     let rows = metrics.map(([label, key, unit]) => mrow(label, b[key], unit)).join('');
+    // Players who ran the repeated sprint also see each of their six times.
+    if (title === 'Repeated Sprint') {
+      const times = [1,2,3,4,5,6].map(n => [n, b['Repeated Sprint ' + n + ' (s)']]);
+      if (times.some(([, t]) => t != null)) {
+        rows += '<div class="sprint-times">' + times.map(([n, t]) => mrow('Sprint ' + n, t, 's')).join('') + '</div>';
+      }
+    }
     // Futsalnaut is a plain count, so it shows as a whole number with no unit.
     if (title === 'Other') {
       const f = b['Futsalnaut'];
