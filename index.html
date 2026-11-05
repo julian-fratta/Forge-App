@@ -337,6 +337,12 @@ body{font-family:'Barlow',sans-serif;background:#000;min-height:100vh;min-height
 .mval{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.4px}
 .sprint-times{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .sprint-times .mrow{flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:0}
+.desc-i{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;padding:0;border:1px solid var(--text3);border-radius:50%;background:none;color:var(--text3);font:600 10px/1 'Barlow',sans-serif;letter-spacing:0;vertical-align:1px;cursor:inherit;transition:color .12s,border-color .12s}
+[data-desc].desc-open>h4>.desc-i,[data-desc].desc-open>.mname>.desc-i,.desc-i:focus-visible{color:var(--forge-gold);border-color:var(--forge-gold)}
+@media (hover:hover){[data-desc]{cursor:help}}
+.desc-tip{position:fixed;z-index:9000;width:max-content;max-width:min(300px,calc(100vw - 32px));padding:11px 13px;background:var(--bg4);border:1px solid rgba(201,162,39,.45);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.45);color:var(--ink);font-size:13px;line-height:1.5;pointer-events:none;visibility:hidden;opacity:0;transform:translateY(3px);transition:opacity .12s,transform .12s}
+.desc-tip.show{visibility:visible;opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.desc-tip{transition:none;transform:none}}
 .munit{font-size:11px;color:var(--text3);margin-left:3px;font-weight:400}
 
 /* Score bars — thicker, fully rounded, subtler track */
@@ -1779,24 +1785,20 @@ function showDetail(num, fromSection) {
     document.getElementById('detail-body').innerHTML = phdrHTML + edBanner + contents.map((c,i) =>
       `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
     ).join('') + saveBar;
-  } else if (!ed && hasBenchSession(num)) {
-    // Benchmarks with a recent session (e.g. "Benchmarks 10/24"): two tabs,
-    // the running matrix and the session. The session tab only appears for
-    // players who have data in that sheet. Players with nothing on the running
-    // matrix open straight on the session, so they don't land on an empty tab.
-    // (Editing still uses the single matrix view below.)
-    const bench1024 = byNum(DB.benchmarks1024, num);
-    const tabNames = ['Benchmarks','10/24'];
-    const startTab = Object.keys(bench).some(k => k !== 'num') ? 0 : 1;
-    document.getElementById('detail-tabs').innerHTML = tabNames.map((t,i) =>
-      `<div class="tab${i===startTab?' active':''}" onclick="switchTab(${i})">${t}</div>`
+  } else if (!ed && (hasBenchSession(num) || Object.keys(bench).some(k => k !== 'num'))) {
+    // One tab per benchmark date, newest first, and only the dates this player
+    // has results for. (Editing still uses the single matrix view below.)
+    const dates = [];
+    if (hasBenchSession(num)) dates.push(['10/24/26', buildBenchSession(byNum(DB.benchmarks1024, num))]);
+    if (Object.keys(bench).some(k => k !== 'num')) dates.push(['10/19/25', buildBench(bench)]);
+    document.getElementById('detail-tabs').innerHTML = dates.map(([date],i) =>
+      `<div class="tab${i===0?' active':''}" onclick="switchTab(${i})">${date}</div>`
     ).join('');
-    const contents = [buildBench(bench), buildBenchSession(bench1024)];
-    document.getElementById('detail-body').innerHTML = phdrHTML + contents.map((c,i) =>
-      `<div class="tab-content${i===startTab?' active':''}" id="tc-${i}">${c}</div>`
+    document.getElementById('detail-body').innerHTML = phdrHTML + dates.map(([,c],i) =>
+      `<div class="tab-content${i===0?' active':''}" id="tc-${i}">${c}</div>`
     ).join('');
   } else {
-    // Benchmarks — single view, no tabs. Staff can flip into edit mode.
+    // No benchmark dates for this player, or staff edit mode: no tabs.
     document.getElementById('detail-tabs').innerHTML = '';
     const benchBody = ed ? buildBenchEditable(bench) : buildBench(bench);
     document.getElementById('detail-body').innerHTML = phdrHTML + `<div class="tab-content active">${benchBody}</div>`;
@@ -1823,16 +1825,19 @@ function animateBars(container) {
 function switchTab(i) {
   document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
   document.querySelectorAll('.tab-content').forEach((t,j) => t.classList.toggle('active', i===j));
-  if (i === 0) setTimeout(() => { if (typeof initBenchCharts === 'function') initBenchCharts(); }, 50);
   // Re-animate bars in the newly active tab
   const activeTab = document.querySelector('.tab-content.active');
+  // Charts can't size themselves in a hidden tab, so draw them once it's showing.
+  if (activeTab && activeTab.querySelector('canvas[id^="bench-"]')) setTimeout(() => { if (typeof initBenchCharts === 'function') initBenchCharts(); }, 50);
   if (activeTab) setTimeout(() => animateBars(activeTab), 20);
 }
 
 // ── Content builders ───────────────────────────────────────────
-function mrow(label, val, unit) {
-  if (val == null || val === undefined || isNaN(parseFloat(val))) return `<div class="mrow"><span class="mname">${label}</span><span style="color:var(--text3)">—</span></div>`;
-  return `<div class="mrow"><span class="mname">${label}</span><span class="mval">${parseFloat(val).toFixed(2)}<span class="munit">${unit}</span></span></div>`;
+function mrow(label, val, unit, desc) {
+  const attr = desc ? ` data-desc="${desc}"` : '';
+  const name = `<span class="mname">${label}${desc ? descIcon(desc, label) : ''}</span>`;
+  if (val == null || val === undefined || isNaN(parseFloat(val))) return `<div class="mrow"${attr}>${name}<span style="color:var(--text3)">—</span></div>`;
+  return `<div class="mrow"${attr}>${name}<span class="mval">${parseFloat(val).toFixed(2)}<span class="munit">${unit}</span></span></div>`;
 }
 
 function srow(label, val) {
@@ -1938,7 +1943,7 @@ function buildBenchEditable(b) {
       + `<input class="edit-inp" type="number" step="0.01" inputmode="decimal" data-cat="benchmarks" data-k="${k}" value="${v}" placeholder="—"></div>`;
   }).join('');
   const metrics = BENCH_GROUPS.map(([t,ks]) => `<div class="mg"><h4>${t}</h4>${rows(ks)}</div>`).join('');
-  return `<div class="edit-banner">✎ Editing benchmarks — saves to the app and your Google Sheet.</div>`
+  return `<div class="edit-banner">✎ Editing 10/19/25 benchmarks — saves to the app and your Google Sheet.</div>`
     + metrics
     + editActionsBar(b.num, 'benchmarks');
 }
@@ -2034,21 +2039,95 @@ function hasBenchSession(num) {
   return Object.keys(d).some(k => k !== 'num');
 }
 
-// Each metric is [label shown in the app, summary tab column header, unit].
+// Each metric is [label shown in the app, summary tab column header, unit,
+// optional description id]. A section's optional third item is the description
+// id for the whole section.
 const BENCH_SESSION_GROUPS = [
-  ['Repeated Sprint', [['Percent Decrement','Repeated Sprint Decrement (%)','%']]],
-  ['Best Jumps', [['Counter Movement Jump','Counter Movement Jump Best (in)','in'],['Broad Jump','Broad Jump Best (in)','in']]],
-  ['10m Sprint', [['Best Time','10m Sprint Best (s)','s'],['Average','10m Sprint Average (s)','s']]],
-  ['5m Turning', [['Without Ball','5m Turning Without Ball (s)','s'],['With Ball','5m Turning With Ball (s)','s']]],
-  ['2m Star', [['Without Ball','2m Star Without Ball (s)','s'],['With Ball','2m Star With Ball (s)','s']]],
-  ['10m Dribble', [['Strong Foot','10m Dribble Strong Foot (s)','s'],['Weak Foot','10m Dribble Weak Foot (s)','s'],['Both Feet','10m Dribble Both Feet (s)','s']]],
-  ['Other', [['M Test','M Test (s)','s'],['Illinois Agility','Illinois Agility (s)','s']]]
+  ['Repeated Sprint', [['Percent Decrement','Repeated Sprint Decrement (%)','%']], 'rsa'],
+  ['Best Jumps', [['Counter Movement Jump','Counter Movement Jump Best (in)','in','cmj'],['Broad Jump','Broad Jump Best (in)','in','broad']]],
+  ['10m Sprint', [['Best Time','10m Sprint Best (s)','s'],['Average','10m Sprint Average (s)','s']], 'sprint'],
+  ['5m Turning', [['Without Ball','5m Turning Without Ball (s)','s'],['With Ball','5m Turning With Ball (s)','s']], 'turning'],
+  ['2m Star', [['Without Ball','2m Star Without Ball (s)','s'],['With Ball','2m Star With Ball (s)','s']], 'star'],
+  ['10m Dribble', [['Strong Foot','10m Dribble Strong Foot (s)','s'],['Weak Foot','10m Dribble Weak Foot (s)','s'],['Both Feet','10m Dribble Both Feet (s)','s']], 'dribble'],
+  ['Other', [['M Test','M Test (s)','s','mtest'],['Illinois Agility','Illinois Agility (s)','s','illinois']]]
 ];
+
+// What each test measures.
+const BENCH_DESCRIPTIONS = {
+  cmj: 'Countermovement Jump (CMJ) measures maximum vertical jump height from a standing position, with hands on hips and feet shoulder-width apart.',
+  broad: 'Broad Jump measures maximum horizontal jump distance from a standing two-footed takeoff, landing and holding position.',
+  futsalnaut: 'Futsalnaut measures passing speed and accuracy to four targets, each 6 meters from center, over 30 seconds.',
+  sprint: '10m Sprint measures time to cover 10 meters from a standing start, with a 5-meter split captured automatically.',
+  dribble: '10m Dribble Speed measures time to weave through 5 cones and back (10 meters total) with dominant foot, non-dominant foot, and both feet.',
+  illinois: 'Illinois Agility Test measures time to complete a standardised 10m × 5m course combining straight sprints and directional changes, without the ball.',
+  turning: '5m Turning Test measures time to complete four 5-meter sprints with 180° turns, performed without ball and with ball.',
+  star: '2m Star test measures time to weave through five cones, with four cones 2m apart from the center cone, performed with and without ball.',
+  mtest: 'M-Test measures time to dribble through an M-shaped course across four cones set 8 meters apart, with the ball.',
+  rsa: 'RSA measures sprint times across 6 × 40m shuttle sprints with ~30 seconds rest between efforts, tracking speed and fatigue across repetitions.'
+};
+
+function descIcon(id, name) {
+  return `<button type="button" class="desc-i" aria-label="About ${name}: ${BENCH_DESCRIPTIONS[id]}">i</button>`;
+}
+
+// One shared description bubble: hover with a mouse, tap on a touch screen,
+// or Tab to the "i" with a keyboard.
+const descTip = document.createElement('div');
+descTip.className = 'desc-tip';
+descTip.setAttribute('aria-hidden', 'true');
+document.body.appendChild(descTip);
+let descOpen = null, descInput = 'mouse';
+
+function hideDesc() {
+  if (!descOpen) return;
+  descOpen.classList.remove('desc-open');
+  descOpen = null;
+  descTip.classList.remove('show');
+}
+function showDesc(el) {
+  if (el === descOpen) return;
+  hideDesc();
+  descTip.textContent = BENCH_DESCRIPTIONS[el.dataset.desc];
+  const anchor = (el.querySelector(':scope>h4') || el).getBoundingClientRect();
+  const w = descTip.offsetWidth, h = descTip.offsetHeight, margin = 12, gap = 8;
+  let top = anchor.top - h - gap;
+  if (top < margin) top = anchor.bottom + gap;
+  descTip.style.top = Math.max(margin, Math.min(top, innerHeight - h - margin)) + 'px';
+  descTip.style.left = Math.max(margin, Math.min(anchor.left, innerWidth - w - margin)) + 'px';
+  descTip.classList.add('show');
+  el.classList.add('desc-open');
+  descOpen = el;
+}
+document.addEventListener('pointerdown', e => { descInput = e.pointerType || 'mouse'; }, true);
+document.addEventListener('pointerover', e => {
+  if (e.pointerType !== 'mouse') return;
+  const el = e.target.closest('[data-desc]');
+  if (el) showDesc(el); else hideDesc();
+});
+document.documentElement.addEventListener('pointerleave', hideDesc);
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-desc]');
+  if (!el) return hideDesc();
+  if (descInput === 'mouse' && e.detail > 0) return showDesc(el);
+  if (el === descOpen) hideDesc(); else showDesc(el); // tap, or Enter on the "i"
+});
+document.addEventListener('keydown', e => {
+  descInput = 'key';
+  if (e.key === 'Escape') hideDesc();
+});
+document.addEventListener('focusin', e => {
+  if (e.target.matches('.desc-i:focus-visible')) showDesc(e.target.closest('[data-desc]'));
+});
+document.addEventListener('focusout', e => {
+  if (descInput === 'key' && e.target.matches('.desc-i')) hideDesc();
+});
+window.addEventListener('scroll', hideDesc, true);
+window.addEventListener('resize', hideDesc);
 
 function buildBenchSession(b) {
   if (!Object.keys(b).some(k => k !== 'num')) return emptyState('No results yet', CHECK_BACK);
-  const groups = BENCH_SESSION_GROUPS.map(([title, metrics]) => {
-    let rows = metrics.map(([label, key, unit]) => mrow(label, b[key], unit)).join('');
+  const groups = BENCH_SESSION_GROUPS.map(([title, metrics, desc]) => {
+    let rows = metrics.map(([label, key, unit, rowDesc]) => mrow(label, b[key], unit, rowDesc)).join('');
     // Players who ran the repeated sprint also see each of their six times.
     if (title === 'Repeated Sprint') {
       const times = [1,2,3,4,5,6].map(n => [n, b['Repeated Sprint ' + n + ' (s)']]);
@@ -2059,11 +2138,14 @@ function buildBenchSession(b) {
     // Futsalnaut is a plain count, so it shows as a whole number with no unit.
     if (title === 'Other') {
       const f = b['Futsalnaut'];
+      const name = `<span class="mname">Futsalnaut${descIcon('futsalnaut', 'Futsalnaut')}</span>`;
       rows += f == null
-        ? `<div class="mrow"><span class="mname">Futsalnaut</span><span style="color:var(--text3)">—</span></div>`
-        : `<div class="mrow"><span class="mname">Futsalnaut</span><span class="mval">${f}</span></div>`;
+        ? `<div class="mrow" data-desc="futsalnaut">${name}<span style="color:var(--text3)">—</span></div>`
+        : `<div class="mrow" data-desc="futsalnaut">${name}<span class="mval">${f}</span></div>`;
     }
-    return `<div class="mg${metrics.length === 1 ? ' mg-wide' : ''}"><h4>${title}</h4>${rows}</div>`;
+    const groupAttr = desc ? ` data-desc="${desc}"` : '';
+    const groupIcon = desc ? descIcon(desc, title) : '';
+    return `<div class="mg${metrics.length === 1 ? ' mg-wide' : ''}"${groupAttr}><h4>${title}${groupIcon}</h4>${rows}</div>`;
   });
   return groups.join('');
 }
